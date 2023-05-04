@@ -9,6 +9,11 @@ import click
 import PyPDF2
 import tempfile
 import img2pdf
+from natsort import os_sorted
+
+EXTENSIONS = [x.casefold() for x in ['.pdf', '.png', '.jpg', '.bmp', '.jpeg', '.tif', '.tiff']]
+
+PATTERNS = [f'*{x}' for x in EXTENSIONS]
 
 
 def load_config():
@@ -27,8 +32,7 @@ def load_config():
 
 def glob_source(path: Path) -> set[Path]:
     files: list[Path] = []
-    patterns = ['*.pdf', '*.png', '*.jpg', '*.bmp', '*.jpeg', '*.tif', '*.tiff']
-    for pattern in patterns:
+    for pattern in PATTERNS:
         files.extend(path.rglob(pattern))
     return set(files)
 
@@ -63,7 +67,6 @@ def process(files: Iterable[Path], output_dir: Path):
                                 resolve_path=True, path_type=Path))
 def merge(paths: tuple[Path]):
     files: set[Path] = set([])
-    ext = ['.pdf', '.png', '.jpg', '.bmp', '.jpeg', '.tif', '.tiff']
     if not paths:
         files = glob_source(Path(os.getcwd()))
     else:
@@ -72,12 +75,12 @@ def merge(paths: tuple[Path]):
                 files.add(path)
             else:
                 files = files.union(glob_source(path))
-    files = set((x for x in files if x.suffix in ext))
+    files = set((x for x in files if x.suffix.casefold() in EXTENSIONS))
     if not files:
         print('Brak plików do scalenia!')
         input('\nWciśnij ENTER, aby wyjść')
         return
-    files_sorted = sorted(files)
+    files_sorted = os_sorted(files)
     print('Scalam następujące pliki:', *files_sorted, sep='\n\t')
     process(files_sorted, load_config())
     input('Wciśnij ENTER, aby wyjść')
