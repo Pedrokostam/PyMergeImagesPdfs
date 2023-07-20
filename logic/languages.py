@@ -18,7 +18,8 @@ class Language:
     msg_pdf_merging: str
     msg_pdf_2_pdf: str
     msg_img_2_pdf: str
-    msg_conversion_error:str
+    msg_conversion_error: str
+    msg_transformation_error: str
 
 
 en = Language(
@@ -38,6 +39,7 @@ en = Language(
     msg_pdf_2_pdf="",
     msg_img_2_pdf=" (image -> PDF)",
     msg_conversion_error="Cannot convert to PDF: ",
+    msg_transformation_error="Could not apply transformations: ",
 )
 pl = Language(
     "pl",
@@ -56,4 +58,5 @@ pl = Language(
     msg_pdf_2_pdf="",
     msg_img_2_pdf=" (obraz -> PDF)",
     msg_conversion_error="Nie można przekonwertować do PDF: ",
+    msg_transformation_error="Przekształcenie obrazu niemożliwe: ",
 )
