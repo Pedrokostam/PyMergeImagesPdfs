@@ -10,11 +10,11 @@ import sys
 from types import SimpleNamespace
 from typing import Any, Callable
 import img2pdf
-import toml
+import json
 from .translator import TRANSLATOR as T
 
 PROGRAM_FOLDER = Path(globals().get("__file__", sys.argv[0])).parent.parent
-CONFIG_PATH = PROGRAM_FOLDER.joinpath("config.toml")
+CONFIG_PATH = PROGRAM_FOLDER.joinpath("config.json")
 DEFAULT_PARAMETERS: dict[str, Any] = {
     "force": True,
     "output_file": None,
@@ -46,9 +46,9 @@ def save_config(namespace: SimpleNamespace | Namespace):
     dict_pars = vars(namespace)
     to_save = {key: dict_pars[key] for key in DEFAULT_ARGS if key in dict_pars}
     with open(CONFIG_PATH, "w") as config_handle:
-        toml.dump(to_save, config_handle)
+        json.dump(to_save, config_handle, indent=2)
     print(T.get("tln_config_saved", path=CONFIG_PATH))
-    print(toml.dumps(to_save))
+    print(json.dumps(to_save, indent=2))
 
 
 def update_config_dict(new_dict: dict[str, Any]):
@@ -62,9 +62,9 @@ def load_config():
     else:
         try:
             with open(CONFIG_PATH, mode="r") as config_handle:
-                configuration_dict = toml.load(config_handle)
+                configuration_dict = json.load(config_handle)
                 update_config_dict(configuration_dict)
-        except toml.decoder.TomlDecodeError:
+        except json.decoder.JSONDecodeError:
             print("Invalid config file!")
 
 

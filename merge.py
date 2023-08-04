@@ -101,11 +101,10 @@ def merge(
     )
 
 
-if __name__ == "__main__":
+def parse_arguments():
     rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "magenta"
     rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "b i"
     rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange b"
-    load_config()
     parser = argparse.ArgumentParser(
         formatter_class=rich_argparse.RawTextRichHelpFormatter,
         # formatter_class=argparse.RawTextHelpFormatter,
@@ -120,8 +119,7 @@ if __name__ == "__main__":
         type=get_files_single,
         help=(
             "Directories and files to be processed.\n"
-            "Files will be treated as images.\n"
-            "Directories will be searched recursively looking for images."
+            "Directories will be searched recursively looking for images or pdfs."
         ),
     )
     parser.add_argument(
@@ -147,7 +145,8 @@ if __name__ == "__main__":
         description=(
             "Sizes can be specified by axes (e.g. 21cmx10cm) or by paper size (e.g. A4, B4).\n"
             "Size units can be mm, cm, in, pt (default).\n"
-            "Border and image sizes can be be specified as percentages of page size (50% or 50%x75%) (page size has to be specified!)."
+            "Border and image sizes can be be specified as percentages of page size (50% or 50%x75%) (page size has to be specified!).\n"
+            "Can also specify empty string or null or none"
         ),
     )
     size_args.add_argument(
@@ -175,7 +174,7 @@ if __name__ == "__main__":
 
     transformation_args = parser.add_argument_group(
         "transformation",
-    )
+    ).add_mutually_exclusive_group()
     transformation_args.add_argument(
         "--auto-orient",
         action="store_true",
@@ -186,7 +185,7 @@ if __name__ == "__main__":
         "--rotation",
         action="store",
         help="Rotation of images",
-        choices=['0', '90', '180', '270', "auto", "ifvalid"],
+        choices=["0", "90", "180", "270", "auto", "ifvalid"],
         default=parameters.PARAMETERS.get("rotation", None),
     )
 
@@ -215,6 +214,12 @@ if __name__ == "__main__":
         default=parameters.PARAMETERS.get("force", None),
     )
     args = parser.parse_args()
+    return args
+
+
+if __name__ == "__main__":
+    load_config()
+    args = parse_arguments()
     T.set_locale(args.language)
     if args.config:
         save_config(args)
@@ -249,7 +254,6 @@ if __name__ == "__main__":
         info_list: list[str] = []
         for file_to_merge in merge_bar:
             display_name = file_to_merge[0].stem[6:]
-            was_image = file_to_merge[0].name[4] == "i"
             merge_bar.set_description_str(display_name)
             merger.append(io.BytesIO(file_to_merge[1]))  # type:ignore
             info_list.append(display_name)

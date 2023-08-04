@@ -3,10 +3,8 @@
 # pyright: reportUnknownArgumentType=false
 # pyright: reportGeneralTypeIssues=false
 # pyright: reportMissingTypeStubs=false
-from argparse import Namespace
 from pathlib import Path
 import re
-from types import SimpleNamespace
 from typing import Any, Callable
 import img2pdf  # type:ignore
 import pypdf
@@ -16,14 +14,18 @@ def parse_size(size: str) -> str:
     return size.lower().replace(" ", "").replace("^t", "^T")
 
 
+def arg_is_none(x: str | None):
+    return x is None or re.search(r"(none|null)", x, flags=re.RegexFlag.IGNORECASE) or not re.search(r"[\d\w]+", x)
+
+
 def parse_pagesize(pagesize: str | None) -> tuple[float, float] | None:
-    if pagesize is None or not re.search(r"[\d\w]+", pagesize):
+    if arg_is_none(pagesize):
         return None
     return img2pdf.parse_pagesize_rectarg(parse_size(pagesize))
 
 
 def parse_imgsize(imgsize: str | None, pagesize: tuple[float, float] | None) -> tuple[float, float]:
-    if imgsize is None or imgsize.isspace():
+    if arg_is_none(imgsize):
         return None
     size = parse_imgborder_size(imgsize, pagesize)
     return img2pdf.parse_imgsize_rectarg(size)
@@ -48,7 +50,7 @@ def parse_imgborder_size(imgsize: str, pagesize: tuple[float, float] | None):
 
 
 def parse_bordersize(bordersize: str | None, pagesize: tuple[float, float] | None) -> tuple[float, float]:
-    if bordersize is None or bordersize.isspace():
+    if arg_is_none(bordersize):
         return None
     size = parse_imgborder_size(bordersize, pagesize)
     return img2pdf.parse_borderarg(size)
@@ -73,12 +75,12 @@ def get_parameters(
         pagesize=pagesize_t,
         imgsize=parse_imgsize(imagesize, pagesize_t),
         border=parse_bordersize(bordersize, pagesize_t),
-        auto_orient=autoorient,
     )
     return {
         "layout_fun": layout_fun,
         "rotation": rot,
         "pagesize": pagesize_t,
+        "autoorient": autoorient,
     }
 
 
