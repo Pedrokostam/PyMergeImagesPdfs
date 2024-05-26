@@ -16,7 +16,7 @@
       "name": "MERGE",
       "type": "python",
       "request": "launch",
-      "program": "C:\\Users\\Pedro\\Documents\\GitHub\\PyMergeImagesPdfs\\merge.py",
+      "program": "${workspaceFolder}/merge.py",
       "console": "integratedTerminal",
       "args": [
         "test/eva.png","test/a3.pdf",

@@ -4,3 +4,6 @@ py2exe~=0.13.0.0
 img2pdf~=0.4.4
 Pillow~=9.3.0
 natsort~=8.3.1
+rich_argparse
+tqdm
+pypdf
