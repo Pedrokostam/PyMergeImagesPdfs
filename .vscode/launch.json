@@ -16,12 +16,10 @@
       "name": "MERGE",
       "type": "python",
       "request": "launch",
-      "program": "${workspaceFolder}/merge.py",
+      "program": "${workspaceFolder}/start.py",
       "console": "integratedTerminal",
       "args": [
-        "test/eva.png","test/a3.pdf",
-        "-of","test/res/a3.pdf"
-        //"-r","90"
+        "."
       ],
       "justMyCode": false
     }

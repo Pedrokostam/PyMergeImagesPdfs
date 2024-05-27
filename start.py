@@ -1,4 +1,6 @@
 import argparse
+import datetime
+import os
 from typing import Sequence, Union
 import pymupdf
 from pathlib import Path
@@ -17,7 +19,7 @@ def is_pdf_extension(path: Path):
     return path.suffix.casefold() == ".pdf"
 
 
-def is_image_extensions(path: Path):
+def is_image_extension(path: Path):
     suffix = path.suffix.casefold()
     return suffix in [".jpeg", ".jpg", ".tiff", ".png"]
 
@@ -46,7 +48,7 @@ def merge(files: Sequence[PathLike], output: PathLike, pagesize: str, *, margin:
     for file in all_filepaths:
         if is_pdf_extension(file):
             output_file.insert_file(str(file))
-        elif is_image_extensions(file):
+        elif is_image_extension(file):
             new_page = output_file.new_page(width=actual_pagesize.width, height=actual_pagesize.height)  # type: ignore
             point_margin = cm_to_points(margin)
             margined_rect = rect_subtract(new_page.rect, point_margin)
@@ -54,6 +56,25 @@ def merge(files: Sequence[PathLike], output: PathLike, pagesize: str, *, margin:
         else:
             print(f"Unknown file type: {file}")
     output_file.save(output)
+
+
+def recurse_files(paths: list[str]):
+    files_to_process: list[Path] = []
+    for path in paths:
+        pathpath = Path(path)
+        if pathpath.is_dir():
+            for f in pathpath.glob("**/*"):
+                if is_image_extension(f) or is_pdf_extension(f):
+                    files_to_process.append(f)
+        else:
+            files_to_process.append(pathpath)
+    return files_to_process
+
+
+def generate_name(root: str):
+    rootpath = Path(root)
+    date = datetime.datetime.now().strftime("%Y-%m-%d %H%M%S")
+    return rootpath.joinpath(f"scalone {date}.pdf")
 
 
 def parse_arguments():
@@ -71,83 +92,18 @@ def parse_arguments():
     parser.add_argument(
         "files",
         nargs="*",
-        type=get_files_single,
+        #type=get_files_single,
         help=(
             "Directories and files to be processed.\n"
             "Directories will be searched recursively looking for images or pdfs."
         ),
     )
-    # parser.add_argument(
-    #     "--whatif",
-    #     action="store_true",
-    #     help="If present, does everything except saving the final merging and saving",
-    # )
-    # parser.add_argument(
-    #     "-l",
-    #     "--language",
-    #     action="store",
-    #     default=parameters.PARAMETERS.get("language", "lll"),
-    #     help="Language to be used for messages.",
-    # )
-    # parser.add_argument(
-    #     "-c",
-    #     "--config",
-    #     action="store_true",
-    #     help="If True, creates config file and exits.",
-    # )
-    # size_args = parser.add_argument_group(
-    #     "size",
-    #     description=(
-    #         "Sizes can be specified by axes (e.g. 21cmx10cm) or by paper size (e.g. A4, B4).\n"
-    #         "Size units can be mm, cm, in, pt (default).\n"
-    #         "Border and image sizes can be be specified as percentages of page size (50% or 50%x75%) (page size has to be specified!).\n"
-    #         "Can also specify empty string or null or none"
-    #     ),
-    # )
-    # size_args.add_argument(
-    #     "-p",
-    #     "--pagesize",
-    #     action="store",
-    #     help="Specifies the page size. Dimensions are separated by 'x'.",
-    #     default=parameters.PARAMETERS.get("pagesize", None),
-    # )
-    # size_args_borderimage = size_args.add_mutually_exclusive_group()
-    # size_args_borderimage.add_argument(
-    #     "-i",
-    #     "--imagesize",
-    #     action="store",
-    #     help="Specifies the maximum image size. Dimensions are separated by 'x'.",
-    #     default=parameters.PARAMETERS.get("imagesize", None),
-    # )
-    # size_args_borderimage.add_argument(
-    #     "-b",
-    #     "--bordersize",
-    #     action="store",
-    #     help="Specifies the minimum border size. Dimensions are separated by ':'.",
-    #     default=parameters.PARAMETERS.get("bordersize", None),
-    # )
-
-    # transformation_args = parser.add_argument_group(
-    #     "transformation",
-    # ).add_mutually_exclusive_group()
-    # transformation_args.add_argument(
-    #     "--auto-orient",
-    #     action="store_true",
-    #     help="If present, will rotate PDF page, to make the image fit better.",
-    # )
-    # transformation_args.add_argument(
-    #     "-r",
-    #     "--rotation",
-    #     action="store",
-    #     help="Rotation of images",
-    #     choices=["0", "90", "180", "270", "auto", "ifvalid"],
-    #     default=parameters.PARAMETERS.get("rotation", None),
-    # )
-
     output_args = parser.add_argument_group(
         "output",
-    ).add_mutually_exclusive_group()
-    output_args.add_argument(
+    )
+
+    exclusive_output = output_args.add_mutually_exclusive_group()
+    exclusive_output.add_argument(
         "-o",
         "-od",
         "--output-directory",
@@ -155,35 +111,32 @@ def parse_arguments():
         help="Path of the directory where ther output file will be placed. Filename will be generated based on time and language.",
         default=parameters.PARAMETERS.get("output_directory", None),
     )
-    output_args.add_argument(
-        "-of",
-        "--output-file",
-        help="Destination path of the output file.",
-        default=parameters.PARAMETERS.get("output_file", None),
-    )
-    output_args.add_argument(
-        "-f",
-        "--force",
-        action="store_true",
-        help="If present, will override destination file if it exists.",
-        default=parameters.PARAMETERS.get("force", None),
-    )
+    # exclusive_output.add_argument(
+    #     "-of",
+    #     "--output-file",
+    #     help="Destination path of the output file.",
+    #     default=None,
+    # )
+    # output_args.add_argument(
+    #     "-f",
+    #     "--force",
+    #     action="store_true",
+    #     help="If present, will override destination file if it exists.",
+    #     default=False,
+    # )
     args = parser.parse_args()
     return args
 
 
 if __name__ == "__main__":
     args = parse_arguments()
-    for path in args.files:
-        pathpath = Path(path)
-        if pathpath.is_dir():
-            pathpath.glob
+    files_to_process = recurse_files(args.files)
+    output = generate_name(args.output_directory)
+    print(files_to_process)
+    print(output)
     merge(
-        (
-            r"C:\Users\Pedro\Documents\Github\PyMergeImagesPdfs\test\10x10.pdf",
-            r"C:\Users\Pedro\Documents\Github\PyMergeImagesPdfs\test\eva.png",
-        ),
-        "pol.pdf",
+        files_to_process,
+        output,
         "A4",
-        margin=(1, 1),
+        margin=(0.25, 0.25),
     )
