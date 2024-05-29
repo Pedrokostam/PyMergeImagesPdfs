@@ -6,6 +6,8 @@ from pathlib import Path
 import rich_argparse
 from natsort import natsorted, ns
 
+from implementation.config import Config
+
 PathLike = str | Path
 
 
@@ -133,6 +135,7 @@ def parse_arguments(default_output_dir: Path):
 
 
 def get_default_output_path():
+    Config().save_config('./config.toml')
     script_path = Path(__file__)
     config_path: Path
     if script_path.parent.name == "_internal":

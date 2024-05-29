@@ -1,9 +1,8 @@
 pymupdf~=1.24.4 
-
-auto-py-to-exe==2.43.3
-tk
+pyinstaller
 rich_argparse
 natsort~=8.3.1
+tomlkit
 # click~=8.1.3
 # pypdf2~=3.0.0
 # py2exe~=0.13.0.0
