@@ -1,11 +1,11 @@
 # Configuration file for stitcher
 
 # Path to the output folder. May contain '~'.
-output_folder = "."
+output_folder = "C:\\Users\\Pedro"
 
 # Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'
 margin = "0pt x 0pt"
-# Page size to be used when adding images. Horizontal then vertical dimension, separated by 'x'.
 
+# Page size to be used when adding images. Horizontal then vertical dimension, separated by 'x'.
 # Can also specify common paper sizes, like 'A4'
 page_size = "A4"

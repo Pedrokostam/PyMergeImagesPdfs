@@ -135,7 +135,6 @@ def parse_arguments(default_output_dir: Path):
 
 
 def get_default_output_path():
-    Config().save_config('./config.toml')
     script_path = Path(__file__)
     config_path: Path
     if script_path.parent.name == "_internal":
@@ -149,6 +148,9 @@ def get_default_output_path():
 
 
 if __name__ == "__main__":
+    Config().save_config('./config.toml')
+    c = Config()
+    c.update("./config.toml")
     default_output = get_default_output_path()
     args = parse_arguments(default_output)
     files_to_process = recurse_files(args.files)
