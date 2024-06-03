@@ -134,24 +134,27 @@ def parse_arguments(default_output_dir: Path):
     return args
 
 
-def get_default_output_path():
-    script_path = Path(__file__)
-    config_path: Path
-    if script_path.parent.name == "_internal":
-        config_path = script_path.parent.parent.joinpath("config.txt")
-    else:
-        config_path = script_path.parent.joinpath("config.txt")
-    if config_path.exists():
-        with open(config_path, "r") as cf:
-            return Path(cf.readline().strip())
-    return Path(".")
+# def get_default_output_path():
+#     script_path = Path(__file__)
+#     config_path: Path
+#     if script_path.parent.name == "_internal":
+#         config_path = script_path.parent.parent.joinpath("config.txt")
+#     else:
+#         config_path = script_path.parent.joinpath("config.txt")
+#     if config_path.exists():
+#         with open(config_path, "r") as cf:
+#             return Path(cf.readline().strip())
+#     return Path(".")
 
 
 if __name__ == "__main__":
-    Config().save_config('./config.toml')
-    c = Config()
-    c.update("./config.toml")
-    default_output = get_default_output_path()
+    regenerate_config = False
+    if regenerate_config:
+        Config().save_config("./config.toml")
+        exit()
+    config = Config()
+    config.update("./config.toml")
+    default_output = Path(__file__).parent
     args = parse_arguments(default_output)
     files_to_process = recurse_files(args.files)
     output = generate_name(args.output_directory)

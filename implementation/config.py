@@ -34,7 +34,6 @@ class Dimension:
             raise ValueError(f"Invalid unit type {unit}")
         self.horizontal = horizontal * unit_mult
         self.vertical = (vertical or horizontal) * unit_mult
-        self._original_text = ""
 
     @classmethod
     def from_tuples(cls, horizontal: tuple[float, str], vertical: tuple[float, str] | None):
@@ -52,12 +51,6 @@ class Dimension:
 
     @classmethod
     def from_str(cls, text: str):
-        p_size = pymupdf.paper_size(text)
-        if p_size != (-1, -1):
-            dim = Dimension(p_size[0], p_size[1], "pt")
-            dim._original_text = text
-            return dim
-
         text = text.casefold()
         parts = text.split("x")
         if len(parts) == 0:
@@ -69,16 +62,13 @@ class Dimension:
         horizontal_tuple = part_tuples[0]
         vertical_tuple = part_tuples[1] if len(part_tuples) > 1 else None
         dim = cls.from_tuples(horizontal_tuple, vertical_tuple)
-        dim._original_text = text
         return dim
 
-    def __str__(self):
+    def __repr__(self):
         return self.to_unit_str(None)
 
     def to_unit_str(self, unit: str | None = None):
         values = (self.horizontal, self.vertical)
-        if not unit and self._original_text:
-            return self._original_text
         if unit:
             unit = unit.casefold().strip()
             if unit == "cm":
@@ -105,41 +95,73 @@ def expand_path(path: str | Path):
 @dataclass
 class Config:
     _output_folder: str = "~"
-    margin: Dimension = Dimension(0, 0, "pt")
-    page_size: Dimension = Dimension.from_str("A4")
+
+    _margin: str | Dimension = "0x0"
+    _page_size: str | Dimension = "A4"
 
     @property
-    def output_folder_expanded(self):
-        return Path(expand_path(self._output_folder))
+    def margin(self):
+        if isinstance(self._margin, Dimension):
+            return self._margin
+        if isinstance(self._margin, str):
+            return Dimension.from_str(self._margin)
+        raise ValueError()
+
+    @property
+    def page_size(self):
+        if isinstance(self._page_size, Dimension):
+            return self._page_size
+        if isinstance(self._page_size, str):
+            p_size = pymupdf.paper_size(self._page_size)
+            if p_size != (-1, -1):
+                return Dimension(p_size[0], p_size[1], "pt")
+            return Dimension.from_str(self._page_size)
+        raise ValueError()
+
+    @page_size.setter
+    def page_size(self, value: str | Dimension | None):
+        if value:
+            self._page_size = value
+
+    @margin.setter
+    def margin(self, value: str | Dimension | None):
+        if value:
+            self._margin = value
+
+    def output_folder_expanded(self, base_path: Path):
+        expanded = Path(expand_path(self._output_folder))
+        if not expanded.is_absolute():
+            return base_path.joinpath(expanded)
+        return expanded
+
+    @property
+    def output_folder(self):
+        return self._output_folder
+
+    @output_folder.setter
+    def output_folder(self, value: str | Path | None):
+        if value:
+            self._output_folder = str(value)
 
     def save_config(self, destination: str | Path):
-        doc = document()
-        doc.add(comment("Configuration file for stitcher"))
-
-        doc.add(nl())
-        doc.add(comment("Path to the output folder. May contain '~'."))
-        doc.add("output_folder", item(str(self._output_folder)))
-
-        doc.add(nl())
-        doc.add(comment("Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'"))
-        doc.add("margin", item(str(self.margin)))
-
-        doc.add(nl())
-        doc.add(
-            comment("Page size to be used when adding images. Horizontal then vertical dimension, separated by 'x'.")
-        )
-        doc.add(comment("Can also specify common paper sizes, like 'A4'"))
-        doc.add("page_size", item(str(self.page_size)))
-
+        d = document()
+        d.add(comment("Configuration file for stitcher"))
+        d.add(nl())
+        d.add(comment("Path to the output folder. May contain '~' and $ variables."))
+        d.add("output_folder", item(str(self._output_folder)))
+        d.add(nl())
+        d.add(comment("Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'"))
+        d.add("margin", item(str(self.margin)))
+        d.add(nl())
+        d.add(comment("Page size to be used when adding images. Horizontal then vertical dimension, separated by 'x'."))
+        d.add(comment("Can also specify common paper sizes, like 'A4'"))
+        d.add("page_size", item(str(self.page_size)))
         with open(str(destination), "w") as fp:
-            dump(doc, fp)
+            dump(d, fp)
 
     def update(self, path: str):
         with open(path, "r") as fp:
             doc = load(fp)
-            if m := doc.get("margin"):
-                self.margin = Dimension.from_str(m)
-            if p := doc.get("page_size"):
-                self.page_size = Dimension.from_str(p)
-            if o := doc.get("output_folder"):
-                self._output_folder = o
+            self.margin = doc.get("margin")
+            self.page_size = doc.get("page_size")
+            self.output_folder = doc.get("output_folder")
