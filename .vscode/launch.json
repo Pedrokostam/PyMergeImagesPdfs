@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Python: Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
@@ -14,12 +14,12 @@
     },
     {
       "name": "MERGE",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/start.py",
       "console": "integratedTerminal",
       "args": [
-        "."
+        "C:\\Users\\Pedro\\OneDrive\\STUDIA\\Studia\\Rzeczy z poprzednich lat - wyselekcjonowane\\SEM 4\\MSI\\Ściąga na Msi.odt"
       ],
       "justMyCode": false
     }

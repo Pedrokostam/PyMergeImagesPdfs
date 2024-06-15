@@ -10,14 +10,17 @@ import os
 PathLike = str | Path
 
 
-    # .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
+# .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
 def libre_to_pdf(document_path: Path, config: Config, output_file: pymupdf.Document):
     if not config.libreoffice_path:
+        print(
+            f"Attempted to merge a document file, but LibreOffice is not installed. File '{document_path}' is ignored."
+        )
         return
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
     subprocess.run([config.libreoffice_path, "--convert-to", "pdf", str(document_path), "--outdir", tempdir])
-    output_file.insert_file(str(tempdir.joinpath(document_path.name)))
+    output_file.insert_file(str(tempdir.joinpath(document_path.with_suffix('.pdf').name)))
 
 
 def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
@@ -41,6 +44,7 @@ def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
             print(f"Unknown file type: {file}")
     output_file.save(str(output))
     print(f"Zapisano w {output}")
+
 
 def image_to_pdf(config, output_file, actual_pagesize, file):
     img = pymupdf.open(file)

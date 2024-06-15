@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import os
 from pathlib import Path
+from typing import Sequence
 from tomlkit import comment, document, nl, item, dump, load
 import pymupdf
 from .dimension import Dimension
@@ -14,8 +15,13 @@ def expand_path(path: str | Path):
 
 @dataclass
 class Config:
-    _output_folder: str = "~"
-    _libreoffice_path: str = r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe"
+    _output_folder: str | None = None
+    _libreoffice_path: list[str] = field(
+        default_factory=lambda: [
+            r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
+            r"%PROGRAMFILES%\LibreOffice\program\soffice.exe",
+        ]
+    )
 
     _margin: str | Dimension = "0x0"
     _page_size: str | Dimension = "A4"
@@ -30,15 +36,16 @@ class Config:
 
     @property
     def libreoffice_path(self):
-        p = Path(expand_path(self._libreoffice_path))
-        if not p.exists:
-            return None
-        return p.absolute()
+        for path in self._libreoffice_path:
+            expanded_path = Path(expand_path(path))
+            if expanded_path.exists():
+                return expanded_path.absolute()
+        return None
 
     @libreoffice_path.setter
-    def libreoffice_path(self, path: str | Path | None):
+    def libreoffice_path(self, path: Sequence[str] | Sequence[Path] | None):
         if path:
-            self._libreoffice_path = str(path)
+            self._libreoffice_path = [str(x) for x in path]
 
     @property
     def page_size(self):
@@ -62,6 +69,8 @@ class Config:
             self._margin = value
 
     def output_folder_expanded(self, base_path: Path):
+        if not self._output_folder:
+            return base_path
         expanded = Path(expand_path(self._output_folder))
         if not expanded.is_absolute():
             return base_path.joinpath(expanded)
@@ -80,11 +89,20 @@ class Config:
         d = document()
         d.add(comment("Configuration file for stitcher"))
         d.add(nl())
-        d.add(comment("Path to Libre Office executable"))
-        d.add(comment("If the path is not valid or does not exists, conversion of LibreOffice formats is disabled."))
+        d.add(comment("Path to Libre Office executable. Multiple paths can be specified, first valid will be used."))
+        d.add(comment("If no path is valid or none exists, conversion of document formats is disabled."))
         d.add("libreoffice_path", item(self._libreoffice_path))
-        d.add(comment("Path to the output folder. May contain '~' and $ variables."))
-        d.add("output_folder", item(self._output_folder))
+        d.add(nl())
+        d.add(
+            comment(
+                "Path to the output folder. May contain '~' and $ variables. "
+                "If not specified, current working directory will be used."
+            )
+        )
+        if self._output_folder:
+            d.add("output_folder", item(self._output_folder))
+        else:
+            d.add(comment('output_folder = "~"'))
         d.add(nl())
         d.add(comment("Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'"))
         d.add("margin", item(str(self.margin)))

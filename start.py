@@ -11,22 +11,25 @@ def parse_arguments(default_output_dir: Path):
     rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "b i"
     rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange b"
     parser = argparse.ArgumentParser(
-        formatter_class=rich_argparse.RawTextRichHelpFormatter,
+        formatter_class=rich_argparse.ArgumentDefaultsRichHelpFormatter,
         # formatter_class=argparse.RawTextHelpFormatter,
         # formatter_class=argparse_formatter.ParagraphFormatter,
-        prog="merge",
-        description="Merges given PDFs and images into a single PDF file",
+        # prog=Path(__file__).name,
+        description="Merges given PDFs, images and OpenDocument formats into a single PDF file.",
         epilog="",
     )
+    # CORE INPUT
     parser.add_argument(
         "files",
         nargs="*",
         # type=get_files_single,
         help=(
-            "Directories and files to be processed.\n"
-            "Directories will be searched recursively looking for images or pdfs."
+            "Directories and files to be processed. "
+            "Directories will be searched recursively looking for images, pdfs and OpenDocument formats. "
+            "Relative paths are based in the current working directory."
         ),
     )
+    # OUTPUT ARGS
     output_args = parser.add_argument_group(
         "output",
     )
@@ -36,17 +39,21 @@ def parse_arguments(default_output_dir: Path):
         "-od",
         "--output-directory",
         action="store",
-        help="Path of the directory where ther output file will be placed. Filename will be generated based on time and language.",
+        help="Path of the directory where ther output file will be placed. "
+        "Filename will be generated based on time and language.",
         default=default_output_dir,
     )
     output_args.add_argument(
         "-f",
         "--force",
         action="store_true",
-        help="If present, will override destination file if it exists.",
+        help="If present, will overwrite destination file if it exists.",
         default=False,
     )
     args = parser.parse_args()
+    if not args.files:
+        parser.print_help()
+        exit()
     return args
 
 
