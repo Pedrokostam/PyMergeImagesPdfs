@@ -15,7 +15,7 @@ def expand_path(path: str | Path):
 
 @dataclass
 class Config:
-    _output_folder: str | None = None
+    _output_folder: str = '.'
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
             r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
@@ -82,8 +82,7 @@ class Config:
 
     @output_folder.setter
     def output_folder(self, value: str | Path | None):
-        if value:
-            self._output_folder = str(value)
+        self._output_folder = str(value or '.')
 
     def save_config(self, destination: str | Path):
         d = document()
@@ -95,14 +94,11 @@ class Config:
         d.add(nl())
         d.add(
             comment(
-                "Path to the output folder. May contain '~' and $ variables. "
+                "Path to the output folder. May contain '~' and variables (% and $). "
                 "If not specified, current working directory will be used."
             )
         )
-        if self._output_folder:
-            d.add("output_folder", item(self._output_folder))
-        else:
-            d.add(comment('output_folder = "~"'))
+        d.add("output_folder", item(self._output_folder))
         d.add(nl())
         d.add(comment("Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'"))
         d.add("margin", item(str(self.margin)))

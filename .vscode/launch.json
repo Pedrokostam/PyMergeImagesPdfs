@@ -16,10 +16,10 @@
       "name": "MERGE",
       "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/start.py",
+      "program": "${workspaceFolder}/merge_documents.py",
       "console": "integratedTerminal",
       "args": [
-        "C:\\Users\\Pedro\\OneDrive\\STUDIA\\Studia\\Rzeczy z poprzednich lat - wyselekcjonowane\\SEM 4\\MSI\\Ściąga na Msi.odt"
+        "C:\\Users\\Pedro\\OneDrive\\STUDIA\\Licbaza\\METUREA"
       ],
       "justMyCode": false
     }
