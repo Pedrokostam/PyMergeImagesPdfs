@@ -1,4 +1,5 @@
-from .files import is_image_extension, is_pdf_extension
+from .dimension import Dimension
+from .files import is_image_extension, is_pdf_extension, is_document_extension
 from pathlib import Path
 from typing import Sequence
 from .config import Config
@@ -20,7 +21,9 @@ def libre_to_pdf(document_path: Path, config: Config, output_file: pymupdf.Docum
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
     subprocess.run([config.libreoffice_path, "--convert-to", "pdf", str(document_path), "--outdir", tempdir])
-    output_file.insert_file(str(tempdir.joinpath(document_path.with_suffix('.pdf').name)))
+    output_file.insert_file(
+        tempdir.joinpath(document_path.with_suffix(".pdf").name)
+    )  # insert_file can handle pathlib.Path
 
 
 def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
@@ -32,17 +35,18 @@ def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
     if pdf_filepaths:
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
+        print(f"First PDF page size {Dimension(actual_pagesize[0],actual_pagesize[1],'pt')}")
     for file in all_filepaths:
         print(f"Zszywanie: {file}")
         if is_pdf_extension(file):
             output_file.insert_file(str(file))
         elif is_image_extension(file):
             image_to_pdf(config, output_file, actual_pagesize, file)
-        elif config.libreoffice_path:
+        elif is_document_extension(file):
             libre_to_pdf(file, config, output_file)
         else:
             print(f"Unknown file type: {file}")
-    output_file.save(str(output))
+    output_file.save(output)  # save can handle pathlib.Path
     print(f"Zapisano w {output}")
 
 
@@ -52,5 +56,5 @@ def image_to_pdf(config, output_file, actual_pagesize, file):
     img.close()
     img_pdf = pymupdf.open("pdf", img_pdf_bytes)
     new_page = output_file.new_page(width=actual_pagesize.width, height=actual_pagesize.height)  # type: ignore
-    margined_rect = (new_page.rect - config.margin).rect
+    margined_rect = (-config.margin + new_page.rect).rect
     new_page.show_pdf_page(margined_rect, img_pdf, pno=0, keep_proportion=True, rotate=0)

@@ -1,4 +1,5 @@
 import re
+from typing import Sequence
 import pymupdf
 
 
@@ -56,12 +57,23 @@ class Dimension:
         return dim
 
     def __sub__(self, other: "Dimension | pymupdf.Rect") -> "Dimension":
-        d = other if isinstance(other, "Dimension") else Dimension(other[0], other[1], "pt")
+        d = _try_to_convert_to_dimension(other)
         return Dimension(self.horizontal - d.horizontal, self.vertical - d.vertical, "pt")
 
     def __rsub__(self, other: "Dimension | pymupdf.Rect") -> "Dimension":
-        d = other if isinstance(other, "Dimension") else Dimension(other[0], other[1], "pt")
+        d = _try_to_convert_to_dimension(other)
         return Dimension(d.horizontal - self.horizontal, d.vertical - self.vertical, "pt")
+
+    def __add__(self, other: "Dimension | pymupdf.Rect") -> "Dimension":
+        d = _try_to_convert_to_dimension(other)
+        return Dimension(self.horizontal + d.horizontal, self.vertical + d.vertical, "pt")
+
+    def __radd__(self, other: "Dimension | pymupdf.Rect") -> "Dimension":
+        d = _try_to_convert_to_dimension(other)
+        return Dimension(d.horizontal + self.horizontal, d.vertical + self.vertical, "pt")
+
+    def __neg__(self):
+        return Dimension(-self.horizontal, -self.vertical, "pt")
 
     @classmethod
     def from_str(cls, text: str):
@@ -98,3 +110,19 @@ class Dimension:
                 raise ValueError(f"Invalid unit type {unit}")
         unit = unit or "pt"
         return f"{values[0]}{unit} x {values[1]}{unit}"
+
+
+def _try_to_convert_to_dimension(o):
+    if isinstance(o, Dimension):
+        return o
+    elif isinstance(o, Sequence):
+        if len(o) == 2:
+            return Dimension(o[0], o[1], "pt")
+        elif len(o) > 3:
+            return Dimension(o[3], o[4], "pt")
+        else:
+            raise ValueError(f"Cannot {o} convert to Dimension")
+    elif isinstance(o, pymupdf.Rect):
+        return Dimension(o.width, o.height, "pt")
+    else:
+        raise ValueError(f"Cannot {o} convert to Dimension")

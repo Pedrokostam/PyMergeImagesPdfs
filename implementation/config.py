@@ -15,11 +15,11 @@ def expand_path(path: str | Path):
 
 @dataclass
 class Config:
-    _output_folder: str = '.'
+    _output_folder: str = "."
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
-            r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
             r"%PROGRAMFILES%\LibreOffice\program\soffice.exe",
+            r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
         ]
     )
 
@@ -27,7 +27,7 @@ class Config:
     _page_size: str | Dimension = "A4"
 
     @property
-    def margin(self):
+    def margin(self) -> Dimension:
         if isinstance(self._margin, Dimension):
             return self._margin
         if isinstance(self._margin, str):
@@ -35,7 +35,12 @@ class Config:
         raise ValueError()
 
     @property
-    def libreoffice_path(self):
+    def libreoffice_path(self) -> Path | None:
+        """Checks if LibreOffice executable exists and returns its path.
+
+        Returns:
+            pathlib.Path | None: Path if libreoffice executable exists at this location, None otherwise
+        """
         for path in self._libreoffice_path:
             expanded_path = Path(expand_path(path))
             if expanded_path.exists():
@@ -68,7 +73,7 @@ class Config:
         if value:
             self._margin = value
 
-    def output_folder_expanded(self, base_path: Path):
+    def output_folder_expanded(self, base_path: Path) -> Path:
         if not self._output_folder:
             return base_path
         expanded = Path(expand_path(self._output_folder))
@@ -82,7 +87,7 @@ class Config:
 
     @output_folder.setter
     def output_folder(self, value: str | Path | None):
-        self._output_folder = str(value or '.')
+        self._output_folder = str(value or ".")
 
     def save_config(self, destination: str | Path):
         d = document()
@@ -109,7 +114,13 @@ class Config:
         with open(str(destination), "w") as fp:
             dump(d, fp)
 
-    def update(self, path: str):
+    def update(self, path: Path | str):
+        """Opens specified TOML file and updates the properites of this instance with the values from TOML.
+        Keys that are not specified in the file are unchanged.
+
+        Args:
+            path (Path | str): Path to the TOML file.
+        """
         with open(path, "r") as fp:
             doc = load(fp)
             self.margin = doc.get("margin")
