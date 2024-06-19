@@ -1,3 +1,4 @@
+from .logger import printlog
 from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 from pathlib import Path
@@ -14,9 +15,7 @@ PathLike = str | Path
 # .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
 def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupdf.Document):
     if not config.libreoffice_path:
-        print(
-            f"Attempted to merge a document file, but LibreOffice is not installed. File '{document_path}' is ignored."
-        )
+        printlog("LibreMissing", document_path)
         return
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
@@ -36,9 +35,9 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
         dim = Dimension(actual_pagesize[0], actual_pagesize[1], "pt")
-        print(f"First PDF page size: {dim}")
+        printlog("FirstPageSize", dim)
     for file in all_filepaths:
-        print(f"Zszywanie: {file}")
+        printlog("Stitching", file)
         if is_pdf_extension(file):
             output_file.insert_file(file)
         elif is_image_extension(file):
@@ -46,9 +45,9 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
         elif is_document_extension(file):
             libre_to_pdf(file, config, output_file)
         else:
-            print(f"Unknown file type: {file}")
+            printlog("UnknownFileType", file)
     output_file.save(output)  # save can handle pathlib.Path
-    print(f"Zapisano w {output}")
+    printlog("OutputSaved", output)
 
 
 def image_to_pdf(file, config, output_file, actual_pagesize):

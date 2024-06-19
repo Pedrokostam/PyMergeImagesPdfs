@@ -75,7 +75,7 @@ def recurse_files(paths: list[str], sort_paths: bool):
                     subfiles.append(f)
                 else:
                     pass
-                    # print(f"File {f} skipped due to unknown extension.")
+                    # log("FileSkipped",f)
             subfiles = natsorted(subfiles, alg=ns.IGNORECASE)
             files_to_process.extend(subfiles)
         else:

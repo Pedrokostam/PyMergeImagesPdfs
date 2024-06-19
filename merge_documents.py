@@ -6,6 +6,7 @@ from implementation.configuration import Configuration
 from implementation import configuration
 from implementation.files import generate_name, recurse_files
 from sys import exit
+from implementation.logger import printlog, log, set_quiet
 
 
 def parse_arguments(default_output_dir: Path, help_override: bool = False):
@@ -129,24 +130,26 @@ def get_default_config_path(__file__):
 
 
 if __name__ == "__main__":
+    default_output = Path(__file__).parent
+    args = parse_arguments(default_output)
+    set_quiet(args.quiet)
     default_config_path = get_default_config_path(__file__)
     if not default_config_path.exists():
         Configuration().save_config(default_config_path)
-        print("Generated default configuration file.")
-    default_output = Path(__file__).parent
-    args = parse_arguments(default_output)
+        # printlog("GeneratedDefaultConfig")
     config_path = args.config or default_config_path
     config = Configuration()
     if not Path(config_path).exists():
-        print(f"Configuration file {config_path} cannot be found. Aborting...")
+        printlog("ConfigNotFound", config_path)
         exit()
     config.update_from_toml(config_path)
     config.update_from_dictlike(vars(args))
+    set_quiet(config.quiet)
     if args.save_config:
         config.save_config(args.save_config)
-        print(f"Configuration saved to {args.save_config}")
+        printlog("ConfigSaved", args.save_config)
     files_to_process = recurse_files(args.files, config.alphabetic_file_sorting)
     output = generate_name(config.output_directory)
     merge_documents(files_to_process, output, config)
     if config.confirm_exit and not config.quiet:
-        input("Wcisnij cokolwiek by zamknac")
+        input(log("ConfirmExit"))

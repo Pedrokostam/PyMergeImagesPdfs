@@ -110,21 +110,21 @@ class Configuration:
 
     @property
     def confirm_exit(self) -> bool:
-        return self._force_image_page_fallback_size
+        return self._confirm_exit
 
     @confirm_exit.setter
     def confirm_exit(self, value):
         if value is not None:
-            self._force_image_page_fallback_size = bool(value)
+            self._confirm_exit = bool(value)
 
     @property
     def quiet(self) -> bool:
-        return self._force_image_page_fallback_size
+        return self._quiet
 
     @quiet.setter
     def quiet(self, value):
         if value is not None:
-            self._force_image_page_fallback_size = bool(value)
+            self._quiet = bool(value)
 
     @property
     def force_image_page_fallback_size(self) -> bool:
