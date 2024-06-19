@@ -1,0 +1,1 @@
+pyinstaller --noconfirm --onedir --console --icon "$psscriptroot\icon.ico" "$psscriptroot\merge_documents.py" --clean --contents-directory .

@@ -6,23 +6,20 @@
   "configurations": [
     {
       "name": "Python: Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "justMyCode": true
+      "justMyCode": true,
+      "args": "${command:pickArgs}"
     },
     {
       "name": "MERGE",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
-      "program": "${workspaceFolder}/merge.py",
+      "program": "${workspaceFolder}/merge_documents.py",
       "console": "integratedTerminal",
-      "args": [
-        "test/eva.png","test/a3.pdf",
-        "-of","test/res/a3.pdf"
-        //"-r","90"
-      ],
+      "args": ["${workspaceFolder}/test"],
       "justMyCode": false
     }
   ]
