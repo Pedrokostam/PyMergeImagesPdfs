@@ -44,6 +44,16 @@ class Config:
 
     _margin: str | Dimension = "0mm x 0mm"
     _page_size: str | Dimension = "A4"
+    _override_argument_order: bool = False
+
+    @property
+    def override_argument_order(self) -> bool:
+        return self._override_argument_order
+
+    @override_argument_order.setter
+    def override_argument_order(self, value):
+        if value is not None:
+            self._override_argument_order = bool(value)
 
     @property
     def margin(self) -> Dimension:
@@ -150,6 +160,15 @@ class Config:
                 "Can also specify common paper sizes, like 'A4'.",
             ],
         )
+        add_item(
+            doc,
+            self.override_argument_order,
+            "override_argument_order",
+            [
+                "When true the order in which the paths are specified is ignored - "
+                "all paths are sorted as if they were in one directory.",
+            ],
+        )
         with open(str(destination), "w") as fp:
             dump(doc, fp)
 
@@ -166,3 +185,4 @@ class Config:
             self.page_size = doc.get("page_size")
             self.output_folder = doc.get("output_folder")
             self.libreoffice_path = doc.get("libreoffice_path")
+            self.override_argument_order = doc.get("override_argument_order")

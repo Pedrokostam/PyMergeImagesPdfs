@@ -40,9 +40,9 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
     for file in all_filepaths:
         print(f"Zszywanie: {file}")
         if is_pdf_extension(file):
-            output_file.insert_file(str(file))
+            output_file.insert_file(file)
         elif is_image_extension(file):
-            image_to_pdf(config, output_file, actual_pagesize, file)
+            image_to_pdf(file, config, output_file, actual_pagesize)
         elif is_document_extension(file):
             libre_to_pdf(file, config, output_file)
         else:
@@ -51,7 +51,7 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
     print(f"Zapisano w {output}")
 
 
-def image_to_pdf(config, output_file, actual_pagesize, file):
+def image_to_pdf(file, config, output_file, actual_pagesize):
     img = pymupdf.open(file)
     img_pdf_bytes = img.convert_to_pdf()
     img.close()
