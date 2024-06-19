@@ -92,7 +92,7 @@ def recurse_files(paths: list[str], sort_paths: bool):
     return files_to_process
 
 
-def generate_name(root: str):
+def generate_name(root: str | Path):
     rootpath = Path(root)
     date = datetime.datetime.now().strftime("%Y-%m-%d %H%M%S")
     return rootpath.joinpath(f"scalone {date}.pdf")

@@ -161,11 +161,11 @@ if __name__ == "__main__":
         config.save_config(args.save_config)
         printlog("ConfigSaved", args.save_config)
     files_to_process = recurse_files(args.files, config.alphabetic_file_sorting)
-    output = generate_name(config.output_directory)
+    output = args.output_file or generate_name(config.output_directory_expanded(default_output))
     printline()
     merge_documents(files_to_process, output, config)
     if config.confirm_exit and not config.quiet:
         try:
-            input(log("ConfirmExit"))
+            input("\n" + str(log("ConfirmExit")))
         except KeyboardInterrupt:
             pass

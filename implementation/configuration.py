@@ -93,7 +93,7 @@ def add_item(doc: TOMLDocument, value, key: str, description: list[str] | str):
 
 @dataclass
 class Configuration:
-    _output_folder: str = "."
+    _output_directory: str = "."
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
             r"%PROGRAMFILES%/LibreOffice/program/soffice.exe",
@@ -191,21 +191,22 @@ class Configuration:
         if value:
             self._margin = value
 
-    def output_folder_expanded(self, base_path: Path) -> Path:
-        if not self._output_folder:
+    def output_directory_expanded(self, base_path: Path) -> Path:
+        if not self._output_directory:
             return base_path
-        expanded = Path(expand_path(self._output_folder))
+        expanded = Path(expand_path(self._output_directory))
         if not expanded.is_absolute():
             return base_path.joinpath(expanded)
         return expanded
 
     @property
     def output_directory(self):
-        return self._output_folder
+        return self._output_directory
 
     @output_directory.setter
     def output_directory(self, value: str | Path | None):
-        self._output_folder = str(value or ".")
+        if value:
+            self._output_directory = str(value)
 
     def save_config(self, destination: str | Path):
         doc = document()
@@ -217,7 +218,7 @@ class Configuration:
             "libreoffice_path",
             LIBREOFFICE_PATH_DESCRIPTION,
         )
-        add_item(doc, self._output_folder, "output_directory", ["Path to the output folder."] + path_disclaimer)
+        add_item(doc, self._output_directory, "output_directory", ["Path to the output folder."] + path_disclaimer)
 
         add_item(doc, self._margin, "margin", MARGIN_DESCRIPTION)
         add_item(doc, self._image_page_fallback_size, "image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)

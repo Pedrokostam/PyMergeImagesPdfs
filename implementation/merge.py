@@ -25,17 +25,17 @@ def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupd
     )  # insert_file can handle pathlib.Path
 
 
-def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Configuration):
+def merge_documents(files: Sequence[PathLike], output_path: Path, config: Configuration):
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
-    output = config.output_folder_expanded(working_dir)
     output_file = pymupdf.Document()
     actual_pagesize = config.image_page_fallback_size.rect
     if pdf_filepaths and not config.force_image_page_fallback_size:
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
-        dim = Dimension(actual_pagesize[0], actual_pagesize[1], "pt")
+        dim = Dimension(actual_pagesize.width, actual_pagesize.height, "pt")
         printlog("FirstPageSize", dim)
+        printline()
     for file in all_filepaths:
         printlog("Stitching", file)
         if is_pdf_extension(file):
@@ -46,9 +46,9 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
             libre_to_pdf(file, config, output_file)
         else:
             printlog("UnknownFileType", file)
-    output_file.save(output)  # save can handle pathlib.Path
+    output_file.save(output_path)  # save can handle pathlib.Path
     printline()
-    printlog("OutputSaved", output.absolute())
+    printlog("OutputSaved", output_path.absolute())
 
 
 def image_to_pdf(file, config, output_file, actual_pagesize):
