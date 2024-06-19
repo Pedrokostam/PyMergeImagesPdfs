@@ -60,20 +60,26 @@ def is_valid_extensions(path: Path):
     return suffix in all_formats
 
 
-def recurse_files(paths: list[str]):
+def recurse_files(paths: list[str], sort_paths: bool):
     files_to_process: list[Path] = []
+    if sort_paths:
+        paths = sorted(paths, key=lambda x: x.casefold())
     for path in paths:
         pathpath = Path(path)
         if pathpath.is_dir():
             subfiles: list[Path] = []
+            # print("DIR  "+str(pathpath))
             for f in pathpath.glob("**/*"):
                 if is_valid_extensions(f):
+                    # print("        "+str(f.relative_to(pathpath)))
                     subfiles.append(f)
                 else:
-                    print(f"File {f} skipped due to unknown extension.")
+                    pass
+                    # print(f"File {f} skipped due to unknown extension.")
             subfiles = natsorted(subfiles, alg=ns.IGNORECASE)
             files_to_process.extend(subfiles)
         else:
+            # print("FILE "+str(pathpath))
             files_to_process.append(pathpath)
     return files_to_process
 

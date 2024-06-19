@@ -2,7 +2,7 @@ from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 from pathlib import Path
 from typing import Sequence
-from .config import Config
+from .configuration import Configuration
 import pymupdf
 import subprocess
 import tempfile
@@ -12,7 +12,7 @@ PathLike = str | Path
 
 
 # .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
-def libre_to_pdf(document_path: Path, config: Config, output_file: pymupdf.Document):
+def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupdf.Document):
     if not config.libreoffice_path:
         print(
             f"Attempted to merge a document file, but LibreOffice is not installed. File '{document_path}' is ignored."
@@ -26,13 +26,13 @@ def libre_to_pdf(document_path: Path, config: Config, output_file: pymupdf.Docum
     )  # insert_file can handle pathlib.Path
 
 
-def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config):
+def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Configuration):
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
     output = config.output_folder_expanded(working_dir)
     output_file = pymupdf.Document()
-    actual_pagesize = config.page_size.rect
-    if pdf_filepaths:
+    actual_pagesize = config.image_page_fallback_size.rect
+    if pdf_filepaths and not config.force_image_page_fallback_size:
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
         dim = Dimension(actual_pagesize[0], actual_pagesize[1], "pt")

@@ -10,7 +10,8 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "justMyCode": true
+      "justMyCode": true,
+      "args": "${command:pickArgs}"
     },
     {
       "name": "MERGE",
@@ -18,9 +19,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/merge_documents.py",
       "console": "integratedTerminal",
-      "args": [
-        "C:\\Users\\Pedro\\OneDrive\\STUDIA\\Licbaza\\METUREA"
-      ],
+      "args": ["${workspaceFolder}/test"],
       "justMyCode": false
     }
   ]
