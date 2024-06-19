@@ -1,12 +1,13 @@
 import argparse
 from pathlib import Path
 import rich_argparse
-from implementation.merge import merge
+from implementation.merge import merge_documents
 from implementation.config import Config
 from implementation.files import generate_name, recurse_files
+from sys import exit
 
 
-def parse_arguments(default_output_dir: Path):
+def parse_arguments(default_output_dir: Path, help_override: bool):
     rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "magenta"
     rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "b i"
     rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange b"
@@ -51,23 +52,22 @@ def parse_arguments(default_output_dir: Path):
         default=False,
     )
     args = parser.parse_args()
-    if not args.files:
+    if not args.files or help_override:
         parser.print_help()
         exit()
     return args
 
 
 if __name__ == "__main__":
-
+    help_override = False
     if not Path("./config.toml").exists():
-        Config().save_config("./config.toml")
-        exit()
-
+        Config().save_config(Path(__file__).parent.joinpath("config.toml"))
+        help_override = True
     config = Config()
     config.update("./config.toml")
     default_output = Path(__file__).parent
-    args = parse_arguments(default_output)
+    args = parse_arguments(default_output, help_override)
     files_to_process = recurse_files(args.files)
     output = generate_name(args.output_directory)
-    merge(files_to_process, output, config)
+    merge_documents(files_to_process, output, config)
     input("Wcisnij cokolwiek by zamknac")

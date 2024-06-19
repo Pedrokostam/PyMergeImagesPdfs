@@ -26,7 +26,7 @@ def libre_to_pdf(document_path: Path, config: Config, output_file: pymupdf.Docum
     )  # insert_file can handle pathlib.Path
 
 
-def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
+def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config):
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
     output = config.output_folder_expanded(working_dir)
@@ -35,7 +35,8 @@ def merge(files: Sequence[PathLike], working_dir: Path, config: Config):
     if pdf_filepaths:
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
-        print(f"First PDF page size {Dimension(actual_pagesize[0],actual_pagesize[1],'pt')}")
+        dim = Dimension(actual_pagesize[0], actual_pagesize[1], "pt")
+        print(f"First PDF page size: {dim}")
     for file in all_filepaths:
         print(f"Zszywanie: {file}")
         if is_pdf_extension(file):
@@ -55,6 +56,6 @@ def image_to_pdf(config, output_file, actual_pagesize, file):
     img_pdf_bytes = img.convert_to_pdf()
     img.close()
     img_pdf = pymupdf.open("pdf", img_pdf_bytes)
-    new_page = output_file.new_page(width=actual_pagesize.width, height=actual_pagesize.height)  # type: ignore
+    new_page = output_file.new_page(width=actual_pagesize.width, height=actual_pagesize.height)
     margined_rect = (-config.margin + new_page.rect).rect
     new_page.show_pdf_page(margined_rect, img_pdf, pno=0, keep_proportion=True, rotate=0)

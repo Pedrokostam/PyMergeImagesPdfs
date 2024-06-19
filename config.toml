@@ -2,10 +2,10 @@
 
 # Path to Libre Office executable. Multiple paths can be specified, first valid will be used.
 # If no path is valid or none exists, conversion of document formats is disabled.
-libreoffice_path = ["%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe", "%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe"]
+libreoffice_path = ["%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe", "%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe"]
 
-# Path to the output folder. May contain '~' and $ variables.If not specified, current working directory will be used.
-# output_folder = ~
+# Path to the output folder. May contain '~' and variables (% and $). If not specified, current working directory will be used.
+output_folder = "."
 
 # Margin to be used when adding images. Horizontal then vertical dimension, separated by 'x'
 margin = "0.0pt x 0.0pt"
