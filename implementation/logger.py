@@ -14,6 +14,7 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
     "FileSkipped": "File '{0}' skipped due to unknown extension.",
     "LibreMissing": "Attempted to merge a document file, but LibreOffice is not installed. File '{0}' is ignored.",
     "ConfirmExit": "Press ENTER to exit...",
+    "InputSorted": "Sorted all input paths alphabetically.",
 }
 
 CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
@@ -24,11 +25,15 @@ def set_quiet(is_quiet: bool):
     _QUIET = bool(is_quiet or False)
 
 
+def get_quiet():
+    return _QUIET
+
+
 def set_language_from_file(path: Path):
     global CURRENT_LOCALIZATION
     if not path.exists():
         return
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf8") as f:
         CURRENT_LOCALIZATION = json.load(f)
 
 
@@ -37,6 +42,12 @@ def log(msg_key: str, *args, **kwargs):
         return
     message = CURRENT_LOCALIZATION.get(msg_key, _ENGLISH_LOCALIZATION[msg_key])
     return message.format(*args, **kwargs)
+
+
+def printline():
+    if _QUIET:
+        return
+    print("")
 
 
 def printlog(msg_key: str, *args, **kwargs):

@@ -7,7 +7,7 @@ from implementation.configuration import Configuration
 from implementation import configuration
 from implementation.files import generate_name, recurse_files
 from sys import exit
-from implementation.logger import printlog, log, set_language_from_file, set_quiet
+from implementation.logger import printline, printlog, log, set_language_from_file, set_quiet
 
 
 def parse_arguments(default_output_dir: Path, help_override: bool = False):
@@ -150,7 +150,7 @@ def load_config(cmd_args, default_config_path):
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="locale")  # type: ignore
+    sys.stdout.reconfigure(encoding="utf8")  # type: ignore
     default_output = Path(__file__).parent
     set_language_from_file(default_output.joinpath("language.json"))
     args = parse_arguments(default_output)
@@ -162,6 +162,7 @@ if __name__ == "__main__":
         printlog("ConfigSaved", args.save_config)
     files_to_process = recurse_files(args.files, config.alphabetic_file_sorting)
     output = generate_name(config.output_directory)
+    printline()
     merge_documents(files_to_process, output, config)
     if config.confirm_exit and not config.quiet:
         try:

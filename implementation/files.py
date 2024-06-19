@@ -2,6 +2,8 @@ from pathlib import Path
 from natsort import natsorted, ns
 import datetime
 
+from .logger import get_quiet, printline, printlog
+
 # fmt: off
 # extensions copy-pasted from Open File windows in LibreOffice
 text_documents = [
@@ -60,27 +62,33 @@ def is_valid_extensions(path: Path):
     return suffix in all_formats
 
 
+def print_entry(path: Path, indent: int):
+    if get_quiet():
+        return
+    indentation = "| " * indent
+    msg = indentation + "|-" + str(path.absolute())
+    print(msg.encode("utf8").decode("utf8"))
+
+
+def recurse_impl(path: Path, collection: list[Path], depth: int):
+    if path.is_file():
+        if is_valid_extensions(path):
+            collection.append(path)
+            print_entry(path, depth)
+    if path.is_dir():
+        print_entry(path, depth)
+        for subentry in natsorted(path.glob("*"), alg=ns.IGNORECASE):
+            recurse_impl(subentry, collection, depth + 1)
+
+
 def recurse_files(paths: list[str], sort_paths: bool):
     files_to_process: list[Path] = []
     if sort_paths:
         paths = sorted(paths, key=lambda x: x.casefold())
+        printlog("InputSorted")
+        printline()
     for path in paths:
-        pathpath = Path(path)
-        if pathpath.is_dir():
-            subfiles: list[Path] = []
-            # print("DIR  "+str(pathpath))
-            for f in pathpath.glob("**/*"):
-                if is_valid_extensions(f):
-                    # print("        "+str(f.relative_to(pathpath)))
-                    subfiles.append(f)
-                else:
-                    pass
-                    # log("FileSkipped",f)
-            subfiles = natsorted(subfiles, alg=ns.IGNORECASE)
-            files_to_process.extend(subfiles)
-        else:
-            # print("FILE "+str(pathpath))
-            files_to_process.append(pathpath)
+        recurse_impl(Path(path), files_to_process, 0)
     return files_to_process
 
 

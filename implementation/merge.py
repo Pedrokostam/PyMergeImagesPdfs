@@ -1,4 +1,4 @@
-from .logger import printlog
+from .logger import printline, printlog
 from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 from pathlib import Path
@@ -47,6 +47,7 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
         else:
             printlog("UnknownFileType", file)
     output_file.save(output)  # save can handle pathlib.Path
+    printline()
     printlog("OutputSaved", output.absolute())
 
 
