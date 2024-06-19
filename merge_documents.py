@@ -60,11 +60,13 @@ def parse_arguments(default_output_dir: Path, help_override: bool):
 
 if __name__ == "__main__":
     help_override = False
+    config_path = Path(__file__).parent.joinpath("config.toml")
     if not Path("./config.toml").exists():
-        Config().save_config(Path(__file__).parent.joinpath("config.toml"))
+        Config().save_config(config_path)
+        print(f"\nCreated configuration file at {config_path.absolute()}.\n")
         help_override = True
     config = Config()
-    config.update("./config.toml")
+    config.update(config_path)
     default_output = Path(__file__).parent
     args = parse_arguments(default_output, help_override)
     files_to_process = recurse_files(args.files)
