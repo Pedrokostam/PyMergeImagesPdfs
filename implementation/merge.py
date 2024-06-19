@@ -47,7 +47,7 @@ def merge_documents(files: Sequence[PathLike], working_dir: Path, config: Config
         else:
             printlog("UnknownFileType", file)
     output_file.save(output)  # save can handle pathlib.Path
-    printlog("OutputSaved", output)
+    printlog("OutputSaved", output.absolute())
 
 
 def image_to_pdf(file, config, output_file, actual_pagesize):

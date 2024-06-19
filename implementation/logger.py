@@ -1,3 +1,6 @@
+from pathlib import Path
+import json
+
 _QUIET: bool = False
 
 _ENGLISH_LOCALIZATION: dict[str, str] = {
@@ -19,6 +22,14 @@ CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
 def set_quiet(is_quiet: bool):
     global _QUIET
     _QUIET = bool(is_quiet or False)
+
+
+def set_language_from_file(path: Path):
+    global CURRENT_LOCALIZATION
+    if not path.exists():
+        return
+    with open(path, "r") as f:
+        CURRENT_LOCALIZATION = json.load(f)
 
 
 def log(msg_key: str, *args, **kwargs):

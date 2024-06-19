@@ -1,12 +1,13 @@
 import argparse
 from pathlib import Path
+import sys
 import rich_argparse
 from implementation.merge import merge_documents
 from implementation.configuration import Configuration
 from implementation import configuration
 from implementation.files import generate_name, recurse_files
 from sys import exit
-from implementation.logger import printlog, log, set_quiet
+from implementation.logger import printlog, log, set_language_from_file, set_quiet
 
 
 def parse_arguments(default_output_dir: Path, help_override: bool = False):
@@ -122,6 +123,7 @@ def parse_arguments(default_output_dir: Path, help_override: bool = False):
     if not args.files or help_override:
         parser.print_help()
         exit()
+    set_quiet(args.quiet)
     return args
 
 
@@ -129,22 +131,32 @@ def get_default_config_path(__file__):
     return Path(__file__).parent.joinpath("config.toml")
 
 
-if __name__ == "__main__":
-    default_output = Path(__file__).parent
-    args = parse_arguments(default_output)
-    set_quiet(args.quiet)
-    default_config_path = get_default_config_path(__file__)
+def regenerate_default_config(default_config_path: Path):
     if not default_config_path.exists():
         Configuration().save_config(default_config_path)
         # printlog("GeneratedDefaultConfig")
-    config_path = args.config or default_config_path
+
+
+def load_config(cmd_args, default_config_path):
+    config_path = cmd_args.config or default_config_path
     config = Configuration()
     if not Path(config_path).exists():
         printlog("ConfigNotFound", config_path)
         exit()
     config.update_from_toml(config_path)
-    config.update_from_dictlike(vars(args))
+    config.update_from_dictlike(vars(cmd_args))
     set_quiet(config.quiet)
+    return config
+
+
+if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="locale")  # type: ignore
+    default_output = Path(__file__).parent
+    set_language_from_file(default_output.joinpath("language.json"))
+    args = parse_arguments(default_output)
+    default_config_path = get_default_config_path(__file__)
+    regenerate_default_config(default_config_path)
+    config = load_config(args, default_config_path)
     if args.save_config:
         config.save_config(args.save_config)
         printlog("ConfigSaved", args.save_config)
@@ -152,4 +164,7 @@ if __name__ == "__main__":
     output = generate_name(config.output_directory)
     merge_documents(files_to_process, output, config)
     if config.confirm_exit and not config.quiet:
-        input(log("ConfirmExit"))
+        try:
+            input(log("ConfirmExit"))
+        except KeyboardInterrupt:
+            pass
