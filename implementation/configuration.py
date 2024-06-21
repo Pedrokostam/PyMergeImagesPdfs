@@ -4,21 +4,20 @@ from pathlib import Path
 from typing import Sequence
 from tomlkit import TOMLDocument, comment, document, nl, item, dump, load, register_encoder
 import pymupdf
-
 from .logger import printlog
 from .dimension import Dimension
 
 # register fallback string encoder. Dimension can be parsed to and from string
 register_encoder(lambda x: item(str(x)))
 
-path_disclaimer = [
+PATH_DISCLAIMER = [
     "Paths may contain '~' and environmental variables (surrounded with '%' or prepended with '$').",
     "You can use both forward and backward slashes. Backward slashes need to be doubled."
     "Can be relative (to the current working directory).",
 ]
 
 
-unit_disclaimer = " \n".join(
+UNIT_DICLAIMER = " \n".join(
     [
         'Format: "(width)(unit) x (height)(unit)". Units have to match.',
         "You can use points (pt), millimetres (m), centimetres (cm) and inches (inch) as units. "
@@ -32,13 +31,13 @@ LIBREOFFICE_PATH_DESCRIPTION = " \n".join(
         "First available path will be used.",
         "If no path is valid conversion of document formats is disabled.",
     ]
-    + path_disclaimer
+    + PATH_DISCLAIMER
 )
 
 MARGIN_DESCRIPTION: str = " \n".join(
     [
         "Margin to be used when adding images.",
-        unit_disclaimer,
+        UNIT_DICLAIMER,
     ]
 )
 
@@ -46,7 +45,7 @@ IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION: str = " \n".join(
     [
         "When adding images, the page size is set to first PDF's first page size.",
         "If there are no PDF files provided, the fallback value is used.",
-        unit_disclaimer,
+        UNIT_DICLAIMER,
         "Can also specify common paper sizes, like 'A4'.",
     ]
 )
@@ -96,6 +95,7 @@ def add_item(doc: TOMLDocument, value, key: str, description: list[str] | str):
 
 @dataclass
 class Configuration:
+    # pylint: disable=too-many-instance-attributes
     _output_directory: str = "."
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
@@ -221,7 +221,7 @@ class Configuration:
             "libreoffice_path",
             LIBREOFFICE_PATH_DESCRIPTION,
         )
-        add_item(doc, self._output_directory, "output_directory", ["Path to the output folder."] + path_disclaimer)
+        add_item(doc, self._output_directory, "output_directory", ["Path to the output folder."] + PATH_DISCLAIMER)
 
         add_item(doc, self._margin, "margin", MARGIN_DESCRIPTION)
         add_item(doc, self._image_page_fallback_size, "image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)
@@ -234,7 +234,7 @@ class Configuration:
         add_item(doc, self.alphabetic_file_sorting, "override_argument_order", ALPHABETIC_FILE_SORTING_DESCRIPTION)
         add_item(doc, self.confirm_exit, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
         add_item(doc, self.quiet, "quiet", QUIET_DESCRIPTION)
-        with open(str(destination), "w") as fp:
+        with open(str(destination), "w", encoding="utf8") as fp:
             dump(doc, fp)
         printlog("ConfigSaved", destination)
 
@@ -245,7 +245,7 @@ class Configuration:
         Args:
             path (Path | str): Path to the TOML file.
         """
-        with open(path, "r") as fp:
+        with open(path, "r", encoding="utf8") as fp:
             doc = load(fp)
             self.update_from_dictlike(doc)
 

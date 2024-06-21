@@ -21,8 +21,9 @@ CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
 
 
 def set_quiet(is_quiet: bool):
+    # pylint: disable=global-statement
     global _QUIET
-    _QUIET = bool(is_quiet or False)
+    _QUIET = bool(is_quiet)
 
 
 def get_quiet():
@@ -30,6 +31,7 @@ def get_quiet():
 
 
 def set_language_from_file(path: Path):
+    # pylint: disable=global-statement
     global CURRENT_LOCALIZATION
     if not path.exists():
         return
@@ -39,7 +41,7 @@ def set_language_from_file(path: Path):
 
 def log(msg_key: str, *args, **kwargs):
     if _QUIET:
-        return
+        return None
     message = CURRENT_LOCALIZATION.get(msg_key, _ENGLISH_LOCALIZATION[msg_key])
     return message.format(*args, **kwargs)
 
