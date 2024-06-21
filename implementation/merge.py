@@ -46,6 +46,7 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
             libre_to_pdf(file, config, output_file)
         else:
             printlog("UnknownFileType", file)
+    output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
     output_file.save(output_path)  # save can handle pathlib.Path
     printline()
     printlog("OutputSaved", output_path.absolute())
