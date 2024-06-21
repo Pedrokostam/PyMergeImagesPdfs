@@ -4,6 +4,8 @@ from pathlib import Path
 from typing import Sequence
 from tomlkit import TOMLDocument, comment, document, nl, item, dump, load, register_encoder
 import pymupdf
+
+from .logger import printlog
 from .dimension import Dimension
 
 # register fallback string encoder. Dimension can be parsed to and from string
@@ -234,6 +236,7 @@ class Configuration:
         add_item(doc, self.quiet, "quiet", QUIET_DESCRIPTION)
         with open(str(destination), "w") as fp:
             dump(doc, fp)
+        printlog("ConfigSaved", destination)
 
     def update_from_toml(self, path: Path | str):
         """Opens specified TOML file and updates the properites of this instance with the values from TOML.

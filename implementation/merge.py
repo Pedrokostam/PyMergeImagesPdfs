@@ -26,6 +26,7 @@ def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupd
 
 
 def merge_documents(files: Sequence[PathLike], output_path: Path, config: Configuration):
+    printline()
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
     output_file = pymupdf.Document()

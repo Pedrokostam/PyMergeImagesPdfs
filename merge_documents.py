@@ -9,8 +9,10 @@ from implementation.files import generate_name, recurse_files
 from sys import exit
 from implementation.logger import printline, printlog, log, set_language_from_file, set_quiet
 
+PROGRAM_DIR = Path(__file__).parent
 
-def parse_arguments(default_output_dir: Path, help_override: bool = False):
+
+def parse_arguments(help_override: bool = False):
     rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "magenta"
     rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "b i"
     rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange b"
@@ -117,7 +119,8 @@ def parse_arguments(default_output_dir: Path, help_override: bool = False):
         "-of",
         "--output-file",
         action="store",
-        help="Path of the output file. " 'Extension will be changed to ".pdf".',
+        help="Path of the output file. Relative to the current working directory."
+        'Extension will be changed to ".pdf".',
     )
     args, _ = parser.parse_known_args()
     if not args.files or help_override:
@@ -149,23 +152,35 @@ def load_config(cmd_args, default_config_path):
     return config
 
 
-if __name__ == "__main__":
-    # sys.stdout.reconfigure(encoding="utf8")  # type: ignore
-    default_config_path = get_default_config_path(__file__)
-    regenerate_default_config(default_config_path)
-    default_output = Path(__file__).parent
-    set_language_from_file(default_output.joinpath("language.json"))
-    args = parse_arguments(default_output)
-    config = load_config(args, default_config_path)
-    if args.save_config:
-        config.save_config(args.save_config)
-        printlog("ConfigSaved", args.save_config)
-    files_to_process = recurse_files(args.files, config.alphabetic_file_sorting)
-    output = args.output_file or generate_name(config.output_directory_expanded(default_output))
-    printline()
-    merge_documents(files_to_process, output, config)
-    if config.confirm_exit and not config.quiet:
+def wait_for_confirm(wait: bool):
+    if wait:
         try:
             input("\n" + str(log("ConfirmExit")))
-        except KeyboardInterrupt:
+        except KeyboardInterrupt:  # CTRL-C should gracefully exit now
             pass
+
+
+if __name__ == "__main__":
+    # REGENERATE CONFIG
+    default_config_path = PROGRAM_DIR.joinpath("config.toml")
+    regenerate_default_config(default_config_path)
+    # LOAD LANGUAGE
+    set_language_from_file(PROGRAM_DIR.joinpath("language.json"))
+    # PARSE ARGS
+    args = parse_arguments()
+    # LOAD CONFIG
+    config = load_config(args, default_config_path)
+    # MAYBE SAVE CONFIG
+    if args.save_config:
+        config.save_config(args.save_config)
+    # GET FILES
+    files_to_process = recurse_files(args.files, config.alphabetic_file_sorting)
+    # GET OUTPUT PATH
+    if args.output_file:  # Output_file has precedence if specified
+        output = Path(args.output_file)
+    else:
+        output = generate_name(config.output_directory_expanded(PROGRAM_DIR))
+    # MERGE
+    merge_documents(files_to_process, output, config)
+    # WAIT FOR CONFIRM
+    wait_for_confirm(wait=config.confirm_exit and not config.quiet)
