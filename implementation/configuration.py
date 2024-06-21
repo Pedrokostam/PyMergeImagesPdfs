@@ -99,8 +99,8 @@ class Configuration:
     _output_directory: str = "."
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
-            r"%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe",
-            r"%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe",
+            r"%PROGRAMFILES%\LibreOffice\program\soffice.exe",
+            r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
         ]
     )
 
