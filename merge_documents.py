@@ -150,12 +150,12 @@ def load_config(cmd_args, default_config_path):
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf8")  # type: ignore
+    # sys.stdout.reconfigure(encoding="utf8")  # type: ignore
+    default_config_path = get_default_config_path(__file__)
+    regenerate_default_config(default_config_path)
     default_output = Path(__file__).parent
     set_language_from_file(default_output.joinpath("language.json"))
     args = parse_arguments(default_output)
-    default_config_path = get_default_config_path(__file__)
-    regenerate_default_config(default_config_path)
     config = load_config(args, default_config_path)
     if args.save_config:
         config.save_config(args.save_config)
