@@ -130,10 +130,6 @@ def parse_arguments(help_override: bool = False):
     return args
 
 
-def get_default_config_path(__file__):
-    return Path(__file__).parent.joinpath("config.toml")
-
-
 def regenerate_default_config(default_config_path: Path):
     if not default_config_path.exists():
         Configuration().save_config(default_config_path)
