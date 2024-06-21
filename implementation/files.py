@@ -1,7 +1,6 @@
+import datetime
 from pathlib import Path
 from natsort import natsorted, ns
-import datetime
-
 from .logger import get_quiet, printline, printlog
 
 # fmt: off

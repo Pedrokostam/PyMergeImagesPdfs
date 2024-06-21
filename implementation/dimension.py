@@ -28,9 +28,9 @@ class Dimension:
             unit_mult = PT_BY_MM
         elif unit == "cm":
             unit_mult = PT_BY_CM
-        elif unit == "inch" or unit == '"':
+        elif unit in ["inch", '"']:
             unit_mult = PT_BY_INCH
-        elif unit == "pt" or unit == "":
+        elif unit in ["pt", ""]:
             unit_mult = 1
         else:
             raise ValueError(f"Invalid unit type {unit}")
@@ -53,7 +53,6 @@ class Dimension:
             if actual_value_x[1] != actual_value_y[1]:
                 raise ValueError(f"Cannot mix unit in Margin {part_tuples}")
             dim = Dimension(actual_value_x[0], actual_value_y[0], actual_value_x[1])
-        return dim
         return dim
 
     def __sub__(self, other: "Dimension | pymupdf.Rect") -> "Dimension":
@@ -101,11 +100,10 @@ class Dimension:
                 values = [x / PT_BY_CM for x in values]
             elif unit == "mm":
                 values = [x / PT_BY_MM for x in values]
-            elif unit == "inch" or unit == '"':
+            elif unit in ["inch", '"']:
                 values = [x / PT_BY_INCH for x in values]
-            elif unit == "pt" or unit == "":
+            elif unit in ["pt", ""]:
                 unit = "pt"
-                pass
             else:
                 raise ValueError(f"Invalid unit type {unit}")
         unit = unit or "pt"
@@ -115,14 +113,12 @@ class Dimension:
 def _try_to_convert_to_dimension(o):
     if isinstance(o, Dimension):
         return o
-    elif isinstance(o, Sequence):
+    if isinstance(o, Sequence):
         if len(o) == 2:
             return Dimension(o[0], o[1], "pt")
-        elif len(o) > 3:
+        if len(o) > 3:
             return Dimension(o[3], o[4], "pt")
-        else:
-            raise ValueError(f"Cannot {o} convert to Dimension")
-    elif isinstance(o, pymupdf.Rect):
-        return Dimension(o.width, o.height, "pt")
-    else:
         raise ValueError(f"Cannot {o} convert to Dimension")
+    if isinstance(o, pymupdf.Rect):
+        return Dimension(o.width, o.height, "pt")
+    raise ValueError(f"Cannot {o} convert to Dimension")

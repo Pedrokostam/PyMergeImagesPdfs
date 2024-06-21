@@ -1,13 +1,13 @@
-from .logger import printline, printlog
-from .dimension import Dimension
-from .files import is_image_extension, is_pdf_extension, is_document_extension
-from pathlib import Path
-from typing import Sequence
-from .configuration import Configuration
-import pymupdf
 import subprocess
 import tempfile
 import os
+from pathlib import Path
+from typing import Sequence
+import pymupdf
+from .configuration import Configuration
+from .logger import printline, printlog
+from .dimension import Dimension
+from .files import is_image_extension, is_pdf_extension, is_document_extension
 
 PathLike = str | Path
 
@@ -19,13 +19,16 @@ def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupd
         return
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
-    subprocess.run([config.libreoffice_path, "--convert-to", "pdf", str(document_path), "--outdir", tempdir])
+    subprocess.run(
+        [config.libreoffice_path, "--convert-to", "pdf", str(document_path), "--outdir", tempdir], check=True
+    )
     output_file.insert_file(
         tempdir.joinpath(document_path.with_suffix(".pdf").name)
     )  # insert_file can handle pathlib.Path
 
 
 def merge_documents(files: Sequence[PathLike], output_path: Path, config: Configuration):
+    printline()
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
     output_file = pymupdf.Document()
@@ -46,6 +49,7 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
             libre_to_pdf(file, config, output_file)
         else:
             printlog("UnknownFileType", file)
+    output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
     output_file.save(output_path)  # save can handle pathlib.Path
     printline()
     printlog("OutputSaved", output_path.absolute())
