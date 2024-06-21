@@ -11,6 +11,7 @@ register_encoder(lambda x: item(str(x)))
 
 path_disclaimer = [
     "Paths may contain '~' and environmental variables (surrounded with '%' or prepended with '$').",
+    "You can use both forward and backward slashes. Backward slashes need to be doubled."
     "Can be relative (to the current working directory).",
 ]
 
@@ -96,8 +97,8 @@ class Configuration:
     _output_directory: str = "."
     _libreoffice_path: list[str] = field(
         default_factory=lambda: [
-            r"%PROGRAMFILES%/LibreOffice/program/soffice.exe",
-            r"%PROGRAMFILES(X86)%/LibreOffice/program/soffice.exe",
+            r"%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe",
+            r"%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe",
         ]
     )
 
