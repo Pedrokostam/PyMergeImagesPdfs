@@ -59,7 +59,8 @@ FORCE_IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION: str = " \n".join(
 ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
     [
         "When true the order in which the paths are specified is ignored - "
-        "all paths are sorted as if they were in one directory.",
+        "all paths are sorted alphabetically as if they were in one directory.",
+        "Useful when using the porgram by dragging the files onto the executable.",
     ]
 )
 
@@ -231,7 +232,7 @@ class Configuration:
             "force_image_page_fallback_size",
             FORCE_IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
         )
-        add_item(doc, self.alphabetic_file_sorting, "override_argument_order", ALPHABETIC_FILE_SORTING_DESCRIPTION)
+        add_item(doc, self.alphabetic_file_sorting, "alphabetic_file_sorting", ALPHABETIC_FILE_SORTING_DESCRIPTION)
         add_item(doc, self.confirm_exit, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
         add_item(doc, self.quiet, "quiet", QUIET_DESCRIPTION)
         with open(str(destination), "w", encoding="utf8") as fp:
