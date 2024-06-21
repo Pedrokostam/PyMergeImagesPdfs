@@ -1,1 +1,1 @@
-pyinstaller --noconfirm --onedir --console --icon "$psscriptroot\icon.ico" "$psscriptroot\merge_documents.py" --clean --add-data languages.json -add-data config.toml
+pyinstaller --noconfirm --onedir --console --icon "$psscriptroot\icon.ico" "$psscriptroot\merge_documents.py" --clean --add-data=language.json:. --add-data=config.toml:.
