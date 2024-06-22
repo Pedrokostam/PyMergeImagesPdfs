@@ -91,6 +91,12 @@ def parse_arguments(help_override: bool = False):
         ),
     )
     parameters_args.add_argument(
+        "--recursion-limit",
+        action="store",
+        type=int,
+        help=configuration.RECURSION_DESCRIPTION,
+    )
+    parameters_args.add_argument(
         "-p",
         "--image-page-fallback-size",
         action="store",
@@ -119,6 +125,11 @@ def parse_arguments(help_override: bool = False):
         action=argparse.BooleanOptionalAction,
         help=configuration.QUIET_DESCRIPTION,
     )
+    parameters_args.add_argument(
+        "--libreoffice-path",
+        nargs='*',
+        help=configuration.LIBREOFFICE_PATH_DESCRIPTION,
+    )
     # OUTPUT ARGS
     output_args = parser.add_argument_group(
         "Output",
@@ -143,7 +154,7 @@ def parse_arguments(help_override: bool = False):
         help="Path of the output file. Relative to the current working directory."
         'Extension will be changed to ".pdf".',
     )
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
     if not args.files or help_override:
         parser.print_help()
         sys.exit()

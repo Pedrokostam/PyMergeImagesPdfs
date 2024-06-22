@@ -31,7 +31,7 @@ drawing_documents = [
     ".pub", ".vdx", ".vsd", ".vsdm", ".vsdx", ".svg"
     ]
 all_image_formats = set([
-    ".jpeg", ".jpg", ".tiff", ".png"
+    ".jpeg", ".jpg", ".tiff", ".png", ".bmp", ".pnm", ".pbm", ".pam", ".jxr", ".jpx", ".jp2", ".psd"
     ])
 all_pdf_formats = set([
     ".pdf"
@@ -69,25 +69,28 @@ def print_entry(path: Path, indent: int):
     print(msg.encode("utf8").decode("utf8"))
 
 
-def recurse_impl(path: Path, collection: list[Path], depth: int):
+def recurse_impl(path: Path, collection: list[Path], current_depth: int, recursion_limit: int):
     if path.is_file():
         if is_valid_extensions(path):
             collection.append(path)
-            print_entry(path, depth)
+            print_entry(path, current_depth)
+    # not a file and recursion limit met
+    if current_depth >= recursion_limit:
+        return
     if path.is_dir():
-        print_entry(path, depth)
+        print_entry(path, current_depth)
         for subentry in natsorted(path.glob("*"), alg=ns.IGNORECASE):
-            recurse_impl(subentry, collection, depth + 1)
+            recurse_impl(subentry, collection, current_depth=current_depth + 1, recursion_limit=recursion_limit)
 
 
-def recurse_files(paths: list[str], sort_paths: bool):
+def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
     files_to_process: list[Path] = []
     if sort_paths:
         paths = sorted(paths, key=lambda x: x.casefold())
         printlog("InputSorted")
         printline()
     for path in paths:
-        recurse_impl(Path(path), files_to_process, 0)
+        recurse_impl(Path(path), files_to_process, current_depth=0, recursion_limit=recursion_limit)
     return files_to_process
 
 
