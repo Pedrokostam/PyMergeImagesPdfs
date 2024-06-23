@@ -46,7 +46,7 @@ build_options = {
     "packages": get_from_requirements(),
     "excludes": [],
     "include_files": [
-        "config_dragdrop.toml",
+        "config_dragdrop (change name to config to make default).toml",
         "language.json",
     ]
     + lang_files,

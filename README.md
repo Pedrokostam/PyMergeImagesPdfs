@@ -54,4 +54,4 @@ The app will attempt to load a language file if one is present in its folder. Fi
 
 Office documents formats can only be processed if LibreOffice is isntalled on the computer. It leverages its functionality to convert documents to PDFs. If LibreOffice is not installed (or otherwise cannot be found) those documents will be skipped.
 
-It may be possible to use different descendants of StarOffice (like OpenOffirce) since they should habe the same console interface. This however has not been tested.
+It may be possible to use different descendants of StarOffice (like OpenOffirce) since they should have the same console interface. This however has not been tested.
