@@ -66,7 +66,7 @@ ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
 
 CONFIRM_EXIT_DESCRIPTION = "If True, will not exit the program until user confirms."
 
-QUIET_DESCRIPTION = "If True, prints no messages to the console. Overrides confirm-exit."
+QUIET_DESCRIPTION = "If True, prints no messages to the console. Overrides --confirm-exit."
 
 
 RECURSION_DESCRIPTION = "How deep to search for supported files in a directory."
@@ -241,4 +241,6 @@ class Configuration:
         self._set_from_dictlike("confirm_exit", dictionary)
         self._set_from_dictlike("quiet", dictionary)
         self._set_from_dictlike("recursion_limit", dictionary)
-        self._set_from_dictlike("whatif", dictionary)
+        if isinstance(dictionary, dict):
+            # whatif should not be read from TOML
+            self._set_from_dictlike("whatif", dictionary)

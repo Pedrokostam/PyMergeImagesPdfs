@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 from implementation.merge import merge_documents
 from implementation.files import generate_name, recurse_files
-from implementation.logger import set_language_from_folder, printlog
+from implementation.logger import printline, set_language_from_folder, printlog
 from implementation.commandline import regenerate_default_config, parse_arguments, load_config, wait_for_confirm
 
 # if main script is in a folder called _internal, it means it's part of a generated exe
@@ -33,6 +33,7 @@ if __name__ == "__main__":
     # MERGE
     merge_documents(files_to_process, output, config)
     if config.whatif:
+        printline()
         printlog("WhatIfMode")
     # WAIT FOR CONFIRM
     wait_for_confirm(wait=config.confirm_exit and not config.quiet)
