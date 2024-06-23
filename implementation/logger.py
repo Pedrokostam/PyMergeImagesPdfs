@@ -4,6 +4,11 @@ import json
 _QUIET: bool = False
 
 _ENGLISH_LOCALIZATION: dict[str, str] = {
+    "FilesToProcess": """
+╔════════════════╗
+║ Files To Merge ║
+╠════════════════╝
+║""",
     "OutputSaved": "Saved in '{0}'.",
     "UnknownFileType": "Unknown file type {0}.",
     "Stitching": "Stitching '{0}'.",
