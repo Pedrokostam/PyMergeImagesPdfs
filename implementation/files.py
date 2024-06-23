@@ -1,6 +1,7 @@
 import datetime
 from itertools import pairwise, takewhile
 from pathlib import Path
+from typing import Any, Generator
 from natsort import natsorted, ns
 from .logger import get_quiet, printline, printlog
 
@@ -138,9 +139,15 @@ class FoldedPath:
         for s in self.subpaths:
             s.print(False, depth + [not self.is_last])
 
+    def get_files(self) -> Generator["FoldedPath", Any, None]:
+        for s in self.subpaths:
+            if s.is_dir():
+                yield from s.get_files()
+            else:
+                yield s
+
 
 def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
-    filesystem_entries: list[Path] = []
     if sort_paths:
         paths = sorted(paths, key=lambda x: x.casefold())
         printlog("InputSorted")
@@ -150,10 +157,7 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
         folded_paths.append(FoldedPath(path, i + 1 == len(paths)))
         folded_paths[-1].populate(0, recursion_limit)
         folded_paths[-1].print()
-
-        # recurse_impl(Path(path), filesystem_entries, current_depth=0, recursion_limit=recursion_limit)
-    exit()
-    files = [f for f in filesystem_entries if f.is_file()]
+    files = [s.path for f in folded_paths for s in f.get_files()]
     return files
 
 

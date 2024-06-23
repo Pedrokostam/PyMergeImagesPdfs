@@ -92,6 +92,9 @@ class Dimension:
     def __repr__(self):
         return self.to_unit_str(None)
 
+    def __str__(self):
+        return self.to_unit_str("cm")
+
     def to_unit_str(self, unit: str | None = None):
         values = (self.horizontal, self.vertical)
         if unit:
@@ -107,7 +110,7 @@ class Dimension:
             else:
                 raise ValueError(f"Invalid unit type {unit}")
         unit = unit or "pt"
-        return f"{values[0]}{unit} x {values[1]}{unit}"
+        return f"{values[0]:.2f}{unit} x {values[1]:.2f}{unit}"
 
 
 def _try_to_convert_to_dimension(o):

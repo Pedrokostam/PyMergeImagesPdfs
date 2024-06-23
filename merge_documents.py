@@ -2,7 +2,7 @@ from pathlib import Path
 import sys
 from implementation.merge import merge_documents
 from implementation.files import generate_name, recurse_files
-from implementation.logger import set_language_from_file
+from implementation.logger import set_language_from_folder
 from implementation.commandline import regenerate_default_config, parse_arguments, load_config, wait_for_confirm
 
 # if main script is in a folder called _internal, it means it's part of a generated exe
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     default_config_path = PROGRAM_DIR.joinpath("config.toml")
     regenerate_default_config(default_config_path)
     # LOAD LANGUAGE
-    set_language_from_file(PROGRAM_DIR.joinpath("language.json"))
+    set_language_from_folder(PROGRAM_DIR)
     # PARSE ARGS
     args = parse_arguments()
     # LOAD CONFIG

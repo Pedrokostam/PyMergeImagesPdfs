@@ -7,7 +7,7 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
     "OutputSaved": "Saved in '{0}'.",
     "UnknownFileType": "Unknown file type {0}.",
     "Stitching": "Stitching '{0}'.",
-    "FirstPageSize": "First PDF page size '{0}'.",
+    "FirstPageSize": "First PDF page size: {0}.",
     "GeneratedDefaultConfig": "Generated default configration file.",
     "ConfigNotFound": "Configuration file '{0}' not found. Aborting...",
     "ConfigSaved": "Configuration saved to '{0}'",
@@ -30,20 +30,25 @@ def get_quiet():
     return _QUIET
 
 
-def set_language_from_file(path: Path):
+def set_language_from_folder(path: Path):
+    lang_files = sorted(path.glob("language*.json"))
     # pylint: disable=global-statement
     global CURRENT_LOCALIZATION
-    if not path.exists():
-        return
-    with open(path, "r", encoding="utf8") as f:
-        CURRENT_LOCALIZATION = json.load(f)
+    for lang_file in lang_files:
+        if lang_file.exists():
+            with open(lang_file, "r", encoding="utf8") as f:
+                CURRENT_LOCALIZATION = json.load(f)
+                return
 
 
 def log(msg_key: str, *args, **kwargs):
     if _QUIET:
         return None
     message = CURRENT_LOCALIZATION.get(msg_key, _ENGLISH_LOCALIZATION[msg_key])
-    return message.format(*args, **kwargs)
+    try:
+        return message.format(*args, **kwargs)
+    except (IndexError, KeyError):
+        return _ENGLISH_LOCALIZATION[msg_key].format(*args, **kwargs)
 
 
 def printline():

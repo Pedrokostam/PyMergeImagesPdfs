@@ -40,7 +40,13 @@ If you plan on using the app this way, rename `config_dragdrop.toml` to `config.
 
 ## Language
 
-You can change the language of message displayed when merging the document. Simply edit the file language.json. If you delete the file, the app will use English language.
+The app will attempt to load a language file if one is present in its folder. First file matching the pattern `language*.json` will be used. Language files can be edited freely, with 2 caveats:
+
+- a language file should contain all the keys that were present in the original English file. If a key is not present, the default English message will be used.
+- every string should have the same number of matching placeholders as the default English string.
+  - fewer placeholders are permitted - the intended part will simply not be inserted
+  - more placeholders are not permitted - English version will be used instead
+  - named placeholders are not permitted - English version will be used instead
 
 ## Remarks
 
