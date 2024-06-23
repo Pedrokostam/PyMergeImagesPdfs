@@ -47,7 +47,6 @@ build_options = {
     "excludes": [],
     "include_files": [
         "config_dragdrop.toml",
-        "language.json",
     ]
     + lang_files,
 }
