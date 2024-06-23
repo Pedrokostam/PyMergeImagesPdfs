@@ -1,0 +1,57 @@
+# Configuration file for stitcher
+
+# Path to Libre Office executable. 
+# First available path will be used. 
+# If no path is valid conversion of document formats is disabled. 
+# Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$'). 
+# You can use both forward and backward slashes. Backward slashes need to be doubled.Can be relative (to the current working directory).
+# Default value: ["%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe", "%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe"]
+libreoffice_path = ["%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe", "%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe"]
+
+# Which language file to load. Language files should follow the 'language.[lang].json' pattern where 'lang' is an identifier for the language. 
+# This argument accepts this identifier.  
+# If the identifier is an empty string, first available file is loaded. 
+# If the matching file is not found, default language will be used.
+# Default value: ""
+language = ""
+
+# Path to the output folder.
+# Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').
+# You can use both forward and backward slashes. Backward slashes need to be doubled.Can be relative (to the current working directory).
+# Default value: "."
+output_directory = "~/Desktop"
+
+# Margin to be used when adding images. 
+# Format: "(width)(unit) x (height)(unit)". Units have to match. 
+# You can use points (pt), millimetres (m), centimetres (cm) and inches (inch) as units. Default unit is point.
+# Default value: "0mm x 0mm"
+margin = "0mm x 0mm"
+
+# When adding images, the page size is set to first PDF's first page size. 
+# If there are no PDF files provided, the fallback value is used. 
+# Format: "(width)(unit) x (height)(unit)". Units have to match. 
+# You can use points (pt), millimetres (m), centimetres (cm) and inches (inch) as units. Default unit is point. 
+# Can also specify common paper sizes, like 'A4'.
+# Default value: "A4"
+image_page_fallback_size = "A4"
+
+# If True, the specified fallback size will always be used for image pages, regardless of other PDF files.
+# Default value: false
+force_image_page_fallback_size = false
+
+# When true the order in which the paths are specified is ignored - all paths are sorted alphabetically as if they were in one directory. 
+# Useful when using the program by dragging the files onto the executable.
+# Default value: false
+alphabetic_file_sorting = true
+
+# If True, will not exit the program until user confirms.
+# Default value: false
+confirm_exit = true
+
+# If True, prints no messages to the console. Overrides --confirm-exit.
+# Default value: false
+quiet = false
+
+# How deep to search for supported files in a directory.
+# Default value: 5
+recursion_limit = 5

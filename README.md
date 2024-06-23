@@ -34,9 +34,15 @@ The script will generate a default configuration file, if it is missing. The fil
 
 ## *Drag&Drop* usage
 
-While you can always drag and drop elements onto the script/executable, it is recommened to first tweak the configuration file. There should be a configuration file named `config_dragdrop.toml` near the app - it been tweaked to provide better *drag&drop* usage. For example, the output folder is set to **~/Desktop** and the app will not close the console until the user presses Enter.
+While you can always drag and drop elements onto the script/executable, it is recommened to first tweak the configuration file. There should be a configuration file named `config_dragdrop.toml` near the app - it's been tweaked to provide better *drag&drop* usage. For example, the output folder is set to **~/Desktop** and the app will not close the console until the user presses Enter.
 
-If you plan on using the app this way, rename `config_dragdrop.toml` to `config.toml`. Of course, you can edit the file to your liking.
+If you plan on using the app this way, rename that file to `config.toml` (or see the [next section](#shortcuts)). Of course, you can edit the file to your liking.
+
+### Shortcuts
+
+On Windows it may be convenient to create a shortcut to the executable. With a shortcut you can specify arguments in the target field - those will be recognized by the app when opening the shortcut. If you want to use the executable both from the command line and with *drag&drop* you can specify the config for *drag&drop* in the shortcut (path relative to the `Start in:` field).
+
+This way the configuration from `config.toml` is used when in command line (without the need to use `--config`) but *drag&drop* uses its own configuration file.
 
 ## Language
 
