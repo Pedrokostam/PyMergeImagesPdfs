@@ -73,6 +73,12 @@ def parse_arguments(help_override: bool = False):
         type=str,
         help="If a path is provided, all input parameters are saved as a config file, under the given path.",
     )
+    parser.add_argument(
+        "-whatif",
+        "--whatif",
+        action="store_true",
+        help="If present, runs the program, but outputs no files. Overrides --quiet",
+    )
     # PARAMETERS
     parameters_args = parser.add_argument_group("Input parameters")
     parameters_args.description = (
@@ -157,6 +163,8 @@ def parse_arguments(help_override: bool = False):
         'Extension will be changed to ".pdf/.png" as needed.',
     )
     args = parser.parse_args()
+    if args.whatif:
+        args.quiet = False
     if not args.files or help_override:
         parser.print_help()
         sys.exit()

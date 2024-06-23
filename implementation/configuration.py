@@ -104,6 +104,7 @@ class Configuration:
     confirm_exit: bool = False
     quiet: bool = False
     recursion_limit: int = 5
+    whatif: bool = False
 
     def add_item(self, doc: TOMLDocument, key: str, description: list[str] | str):
         newline(doc)
@@ -240,3 +241,4 @@ class Configuration:
         self._set_from_dictlike("confirm_exit", dictionary)
         self._set_from_dictlike("quiet", dictionary)
         self._set_from_dictlike("recursion_limit", dictionary)
+        self._set_from_dictlike("whatif", dictionary)
