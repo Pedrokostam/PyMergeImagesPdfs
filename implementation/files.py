@@ -128,16 +128,16 @@ class FoldedPath:
     def __repr__(self):
         return f"{self.path} - {len(self.subpaths)}"
 
-    def print(self, is_root: bool = True, depth: list[bool] = []):
+    def print(self, is_root: bool = True, depth: list[bool] | None = None):
         if get_quiet():
             return
         line = ""
-        for i, d in enumerate(depth):
+        for i, d in enumerate(depth or []):
             line += get_branch(i == 0) if d else NO_BRANCH
         line += get_end(is_root) if self.is_last else get_tee(is_root)
         print(line + self.display_form(is_root))
         for s in self.subpaths:
-            s.print(False, depth + [not self.is_last])
+            s.print(False, (depth or []) + [not self.is_last])
 
     def get_files(self) -> Generator["FoldedPath", Any, None]:
         for s in self.subpaths:
