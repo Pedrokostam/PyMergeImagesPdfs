@@ -36,6 +36,7 @@ def update_language() -> list[str]:
 def get_from_requirements():
     with open(SETUP_ROOT.joinpath("requirements.txt"), "r", encoding="utf8") as req:
         modules = [x.split("=")[0].lower() for x in req.readlines()]
+        modules = [m for m in modules if m != "cx_freeze"]
         return modules
 
 
