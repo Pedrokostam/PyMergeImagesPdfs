@@ -44,13 +44,13 @@ def parse_arguments(help_override: bool = False):
         # formatter_class=argparse.RawTextHelpFormatter,
         # formatter_class=argparse_formatter.ParagraphFormatter,
         # prog=Path(__file__).name,
-        description="Merges given PDFs, images and OpenDocument formats into a single PDF file.",
-        epilog="",
+        description="Merges given PDFs, images and office document formats into a single PDF file.",
     )
     parser.add_argument(
         "-h",
         "-?",
         "--help",
+        "/?",
         action="help",
         help="Show this help message and exit.",
     )
@@ -61,7 +61,7 @@ def parse_arguments(help_override: bool = False):
         # type=get_files_single,
         help=(
             "Directories and files to be processed.\n"
-            "Directories will be searched recursively looking for images, pdfs and OpenDocument formats. "
+            "Directories will be searched recursively looking for images, pdfs and office document formats. "
             "Relative paths are based in the current working directory."
         ),
     )
@@ -72,6 +72,18 @@ def parse_arguments(help_override: bool = False):
         action="store",
         type=str,
         help="If a path is provided, all input parameters are saved as a config file, under the given path.",
+    )
+    parser.add_argument(
+        "-whatif",
+        "--whatif",
+        action="store_true",
+        help="If present, runs the program, but outputs no files. Overrides --quiet",
+    )
+    parser.add_argument(
+        "-l",
+        "--language",
+        action="store",
+        help=configuration.LANGUAGE_DESCRIPTION
     )
     # PARAMETERS
     parameters_args = parser.add_argument_group("Input parameters")
@@ -91,6 +103,12 @@ def parse_arguments(help_override: bool = False):
         ),
     )
     parameters_args.add_argument(
+        "--recursion-limit",
+        action="store",
+        type=int,
+        help=configuration.RECURSION_DESCRIPTION,
+    )
+    parameters_args.add_argument(
         "-p",
         "--image-page-fallback-size",
         action="store",
@@ -99,12 +117,13 @@ def parse_arguments(help_override: bool = False):
     )
     parameters_args.add_argument("-m", "--margin", action="store", help=configuration.MARGIN_DESCRIPTION)
     parameters_args.add_argument(
-        "-fp",
+        "--fp",
         "--force-image-page-fallback-size",
         action=argparse.BooleanOptionalAction,
         help=configuration.FORCE_IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
     )
     parameters_args.add_argument(
+        "--afs",
         "--alphabetic-file-sorting",
         action=argparse.BooleanOptionalAction,
         help=configuration.ALPHABETIC_FILE_SORTING_DESCRIPTION,
@@ -115,9 +134,15 @@ def parse_arguments(help_override: bool = False):
         help=configuration.CONFIRM_EXIT_DESCRIPTION,
     )
     parameters_args.add_argument(
+        "-q",
         "--quiet",
         action=argparse.BooleanOptionalAction,
         help=configuration.QUIET_DESCRIPTION,
+    )
+    parameters_args.add_argument(
+        "--libreoffice-path",
+        nargs="*",
+        help=configuration.LIBREOFFICE_PATH_DESCRIPTION,
     )
     # OUTPUT ARGS
     output_args = parser.add_argument_group(
@@ -140,10 +165,12 @@ def parse_arguments(help_override: bool = False):
         "-of",
         "--output-file",
         action="store",
-        help="Path of the output file. Relative to the current working directory."
-        'Extension will be changed to ".pdf".',
+        help="Path of the output file. Relative to the current working directory. "
+        'Extension will be changed to ".pdf/.png" as needed.',
     )
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
+    if args.whatif:
+        args.quiet = False
     if not args.files or help_override:
         parser.print_help()
         sys.exit()

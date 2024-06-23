@@ -13,9 +13,11 @@ PathLike = str | Path
 
 
 # .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
-def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupdf.Document):
+def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupdf.Document, dry_run: bool):
     if not config.libreoffice_path:
         printlog("LibreMissing", document_path)
+        return
+    if dry_run:
         return
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
@@ -46,11 +48,12 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         elif is_image_extension(file):
             image_to_pdf(file, config, output_file, actual_pagesize)
         elif is_document_extension(file):
-            libre_to_pdf(file, config, output_file)
+            libre_to_pdf(file, config, output_file, dry_run=config.whatif)
         else:
             printlog("UnknownFileType", file)
     output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
-    output_file.save(output_path)  # save can handle pathlib.Path
+    if not config.whatif:
+        output_file.save(output_path)  # save can handle pathlib.Path
     printline()
     printlog("OutputSaved", output_path.absolute())
 

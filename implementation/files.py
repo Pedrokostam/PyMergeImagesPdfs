@@ -1,5 +1,6 @@
 import datetime
 from pathlib import Path
+from typing import Any, Generator
 from natsort import natsorted, ns
 from .logger import get_quiet, printline, printlog
 
@@ -31,7 +32,7 @@ drawing_documents = [
     ".pub", ".vdx", ".vsd", ".vsdm", ".vsdx", ".svg"
     ]
 all_image_formats = set([
-    ".jpeg", ".jpg", ".tiff", ".png"
+    ".jpeg", ".jpg", ".tiff", ".png", ".bmp", ".pnm", ".pbm", ".pam", ".jxr", ".jpx", ".jp2", ".psd"
     ])
 all_pdf_formats = set([
     ".pdf"
@@ -61,34 +62,104 @@ def is_valid_extensions(path: Path):
     return suffix in all_formats
 
 
-def print_entry(path: Path, indent: int):
-    if get_quiet():
-        return
-    indentation = "| " * indent
-    msg = indentation + "|-" + str(path.absolute())
-    print(msg.encode("utf8").decode("utf8"))
+TREE_PREFIX = "   "
+BRANCH = "│  "
+ROOT_BRANCH = "║  "
+NO_BRANCH = "   "
+TEE = "├──"
+ROOT_TEE = "╠══"
+END = "└──"
+ROOT_END = "╚══"
+DIR_JUNCTION = "┬"
+ROOT_DIR_JUNCTION = "╤"
 
 
-def recurse_impl(path: Path, collection: list[Path], depth: int):
-    if path.is_file():
-        if is_valid_extensions(path):
-            collection.append(path)
-            print_entry(path, depth)
-    if path.is_dir():
-        print_entry(path, depth)
-        for subentry in natsorted(path.glob("*"), alg=ns.IGNORECASE):
-            recurse_impl(subentry, collection, depth + 1)
+def get_junction(root: bool = False):
+    return ROOT_DIR_JUNCTION if root else DIR_JUNCTION
 
 
-def recurse_files(paths: list[str], sort_paths: bool):
-    files_to_process: list[Path] = []
+def get_tee(root: bool = False):
+    return ROOT_TEE if root else TEE
+
+
+def get_end(root: bool = False):
+    return ROOT_END if root else END
+
+
+def get_branch(root: bool = False):
+    return ROOT_BRANCH if root else BRANCH
+
+
+class FoldedPath:
+
+    def __init__(self, path: Path | str, is_last: bool) -> None:
+        self.path = Path(path)
+        self.subpaths: list[FoldedPath] = []
+        self.is_last = is_last
+
+    def populate(self, current_depth: int, max_depth: int):
+        if not self.path.is_dir():
+            return
+        sorted_entries = sorted(
+            natsorted(self.path.glob("*"), alg=ns.IGNORECASE), key=lambda x: x.is_dir(), reverse=False
+        )
+        if current_depth + 1 >= max_depth:
+            sorted_entries = [s for s in sorted_entries if not s.is_dir()]
+        sorted_count = len(sorted_entries)
+        for i, entry in enumerate(sorted_entries):
+            if entry.is_dir() and current_depth + 1 >= max_depth:
+                continue
+            self.subpaths.append(FoldedPath(entry, i + 1 == sorted_count))
+            self.subpaths[-1].populate(current_depth + 1, max_depth)
+
+    def display_form(self, is_root: bool):
+        # junction = get_junction(is_root) if self.is_dir() else ""
+        junction = ""
+        if not self.is_dir():
+            color = "\033[32m{0}\033[0m"
+        else:
+            color = "{0}"
+        name = str(self.path.absolute()) if is_root else self.path.name
+        return junction + color.format(name)
+
+    def is_dir(self):
+        return self.path.is_dir()
+
+    def __repr__(self):
+        return f"{self.path} - {len(self.subpaths)}"
+
+    def print(self, is_root: bool = True, depth: list[bool] | None = None):
+        if get_quiet():
+            return
+        line = ""
+        for i, d in enumerate(depth or []):
+            line += get_branch(i == 0) if d else NO_BRANCH
+        line += get_end(is_root) if self.is_last else get_tee(is_root)
+        print(line + self.display_form(is_root))
+        for s in self.subpaths:
+            s.print(False, (depth or []) + [not self.is_last])
+
+    def get_files(self) -> Generator["FoldedPath", Any, None]:
+        for s in self.subpaths:
+            if s.is_dir():
+                yield from s.get_files()
+            else:
+                yield s
+
+
+def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
     if sort_paths:
         paths = sorted(paths, key=lambda x: x.casefold())
         printlog("InputSorted")
         printline()
-    for path in paths:
-        recurse_impl(Path(path), files_to_process, 0)
-    return files_to_process
+    folded_paths: list[FoldedPath] = []
+    printlog("FilesToProcess")
+    for i, path in enumerate(paths):
+        folded_paths.append(FoldedPath(path, i + 1 == len(paths)))
+        folded_paths[-1].populate(0, recursion_limit)
+        folded_paths[-1].print()
+    files = [s.path for f in folded_paths for s in f.get_files()]
+    return files
 
 
 def generate_name(root: str | Path):

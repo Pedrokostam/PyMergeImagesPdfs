@@ -11,7 +11,7 @@ from .dimension import Dimension
 register_encoder(lambda x: item(str(x)))
 
 PATH_DISCLAIMER = [
-    "Paths may contain '~' and environmental variables (surrounded with '%' or prepended with '$').",
+    "Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').",
     "You can use both forward and backward slashes. Backward slashes need to be doubled."
     "Can be relative (to the current working directory).",
 ]
@@ -60,13 +60,26 @@ ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
     [
         "When true the order in which the paths are specified is ignored - "
         "all paths are sorted alphabetically as if they were in one directory.",
-        "Useful when using the porgram by dragging the files onto the executable.",
+        "Useful when using the program by dragging the files onto the executable.",
+    ]
+)
+
+LANGUAGE_DESCRIPTION = " \n".join(
+    [
+        "Which language file to load. Language files should follow "
+        "the 'language.[lang].json' pattern where 'lang' is an identifier for the language.",
+        "This argument accepts this identifier. ",
+        "If the identifier is an empty string, first available file is loaded.",
+        "If the matching file is not found, default language will be used.",
     ]
 )
 
 CONFIRM_EXIT_DESCRIPTION = "If True, will not exit the program until user confirms."
 
-QUIET_DESCRIPTION = "If True, prints no messages to the console. Overrides confirm-exit."
+QUIET_DESCRIPTION = "If True, prints no messages to the console. Overrides --confirm-exit."
+
+
+RECURSION_DESCRIPTION = "How deep to search for supported files in a directory."
 
 
 def expand_path(path: str | Path):
@@ -83,17 +96,6 @@ def newline(doc: TOMLDocument):
     doc.add(nl())
 
 
-def add_item(doc: TOMLDocument, value, key: str, description: list[str] | str):
-    newline(doc)
-    if isinstance(description, list):
-        description = "\n".join(description)
-    description = description.split("\n")
-    for desc_line in description:
-        add_comment(doc, desc_line)
-    add_comment(doc, f"Default value: {item(value).as_string()}")
-    doc.add(key, item(value))
-
-
 @dataclass
 class Configuration:
     # pylint: disable=too-many-instance-attributes
@@ -107,46 +109,39 @@ class Configuration:
 
     _margin: str | Dimension = "0mm x 0mm"
     _image_page_fallback_size: str | Dimension = "A4"
-    _force_image_page_fallback_size: bool = False
-    _alphabetic_file_sorting: bool = False
-    _confirm_exit: bool = False
-    _quiet: bool = False
+    force_image_page_fallback_size: bool = False
+    alphabetic_file_sorting: bool = False
+    confirm_exit: bool = False
+    quiet: bool = False
+    recursion_limit: int = 5
+    whatif: bool = False
+    language: str = ""
 
-    @property
-    def confirm_exit(self) -> bool:
-        return self._confirm_exit
+    def add_item(self, doc: TOMLDocument, key: str, description: list[str] | str):
+        newline(doc)
+        if isinstance(description, list):
+            description = "\n".join(description)
+        description = description.split("\n")
+        for desc_line in description:
+            add_comment(doc, desc_line)
+        value = getattr(self, key)
+        default_value = item(value).as_string()
+        add_comment(doc, f"Default value: {default_value}")
+        dict_key = key if not key.startswith("_") else key[1:]
+        doc.add(dict_key, item(value))
 
-    @confirm_exit.setter
-    def confirm_exit(self, value):
+    def _set_not_None(self, var_name: str, value):
         if value is not None:
-            self._confirm_exit = bool(value)
+            setattr(self, var_name, value)
 
-    @property
-    def quiet(self) -> bool:
-        return self._quiet
-
-    @quiet.setter
-    def quiet(self, value):
-        if value is not None:
-            self._quiet = bool(value)
-
-    @property
-    def force_image_page_fallback_size(self) -> bool:
-        return self._force_image_page_fallback_size
-
-    @force_image_page_fallback_size.setter
-    def force_image_page_fallback_size(self, value):
-        if value is not None:
-            self._force_image_page_fallback_size = bool(value)
-
-    @property
-    def alphabetic_file_sorting(self) -> bool:
-        return self._alphabetic_file_sorting
-
-    @alphabetic_file_sorting.setter
-    def alphabetic_file_sorting(self, value):
-        if value is not None:
-            self._alphabetic_file_sorting = bool(value)
+    def _set_from_dictlike(self, var_name: str, dictlike: dict | TOMLDocument):
+        """
+        Finds value by key in the dictlike and tries to set the property of the same to that value,
+        If dictlike does not have this key, does nothing.
+        If var_name is prepended with '_' the underscored is ignored for dictlike, but preserved for setattrr
+        """
+        dict_name = var_name[1:] if var_name.startswith("_") else var_name
+        self._set_not_None(var_name, dictlike.get(dict_name, None))
 
     @property
     def margin(self) -> Dimension:
@@ -155,6 +150,27 @@ class Configuration:
         if isinstance(self._margin, str):
             return Dimension.from_str(self._margin)
         raise ValueError()
+
+    @margin.setter
+    def margin(self, value: str | Dimension | None):
+        if value:
+            self._margin = value
+
+    @property
+    def image_page_fallback_size(self):
+        if isinstance(self._image_page_fallback_size, Dimension):
+            return self._image_page_fallback_size
+        if isinstance(self._image_page_fallback_size, str):
+            p_size = pymupdf.paper_size(self._image_page_fallback_size)
+            if p_size != (-1, -1):
+                return Dimension(p_size[0], p_size[1], "pt")
+            return Dimension.from_str(self._image_page_fallback_size)
+        raise ValueError()
+
+    @image_page_fallback_size.setter
+    def image_page_fallback_size(self, value: str | Dimension | None):
+        if value:
+            self._image_page_fallback_size = value
 
     @property
     def libreoffice_path(self) -> Path | None:
@@ -173,27 +189,6 @@ class Configuration:
     def libreoffice_path(self, path: Sequence[str] | Sequence[Path] | None):
         if path:
             self._libreoffice_path = [str(x) for x in path]
-
-    @property
-    def image_page_fallback_size(self):
-        if isinstance(self._image_page_fallback_size, Dimension):
-            return self._image_page_fallback_size
-        if isinstance(self._image_page_fallback_size, str):
-            p_size = pymupdf.paper_size(self._image_page_fallback_size)
-            if p_size != (-1, -1):
-                return Dimension(p_size[0], p_size[1], "pt")
-            return Dimension.from_str(self._image_page_fallback_size)
-        raise ValueError()
-
-    @image_page_fallback_size.setter
-    def image_page_fallback_size(self, value: str | Dimension | None):
-        if value:
-            self._image_page_fallback_size = value
-
-    @margin.setter
-    def margin(self, value: str | Dimension | None):
-        if value:
-            self._margin = value
 
     def output_directory_expanded(self, base_path: Path) -> Path:
         if not self._output_directory:
@@ -216,25 +211,24 @@ class Configuration:
         doc = document()
         add_comment(doc, "Configuration file for stitcher")
 
-        add_item(
+        self.add_item(
             doc,
-            self._libreoffice_path,
-            "libreoffice_path",
+            "_libreoffice_path",
             LIBREOFFICE_PATH_DESCRIPTION,
         )
-        add_item(doc, self._output_directory, "output_directory", ["Path to the output folder."] + PATH_DISCLAIMER)
-
-        add_item(doc, self._margin, "margin", MARGIN_DESCRIPTION)
-        add_item(doc, self._image_page_fallback_size, "image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)
-        add_item(
+        self.add_item(doc, "language", LANGUAGE_DESCRIPTION)
+        self.add_item(doc, "_output_directory", ["Path to the output folder."] + PATH_DISCLAIMER)
+        self.add_item(doc, "_margin", MARGIN_DESCRIPTION)
+        self.add_item(doc, "_image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)
+        self.add_item(
             doc,
-            self.force_image_page_fallback_size,
             "force_image_page_fallback_size",
             FORCE_IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
         )
-        add_item(doc, self.alphabetic_file_sorting, "alphabetic_file_sorting", ALPHABETIC_FILE_SORTING_DESCRIPTION)
-        add_item(doc, self.confirm_exit, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
-        add_item(doc, self.quiet, "quiet", QUIET_DESCRIPTION)
+        self.add_item(doc, "alphabetic_file_sorting", ALPHABETIC_FILE_SORTING_DESCRIPTION)
+        self.add_item(doc, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
+        self.add_item(doc, "quiet", QUIET_DESCRIPTION)
+        self.add_item(doc, "recursion_limit", RECURSION_DESCRIPTION)
         with open(str(destination), "w", encoding="utf8") as fp:
             dump(doc, fp)
         printlog("ConfigSaved", destination)
@@ -251,11 +245,16 @@ class Configuration:
             self.update_from_dictlike(doc)
 
     def update_from_dictlike(self, dictionary: dict | TOMLDocument):
-        self.margin = dictionary.get("margin")
-        self.image_page_fallback_size = dictionary.get("image_page_fallback_size")
-        self.force_image_page_fallback_size = dictionary.get("force_image_page_fallback_size")
-        self.output_directory = dictionary.get("output_directory")
-        self.libreoffice_path = dictionary.get("libreoffice_path")
-        self.alphabetic_file_sorting = dictionary.get("alphabetic_file_sorting")
-        self.confirm_exit = dictionary.get("confirm_exit")
-        self.quiet = dictionary.get("quiet")
+        self._set_from_dictlike("_margin", dictionary)
+        self._set_from_dictlike("_image_page_fallback_size", dictionary)
+        self._set_from_dictlike("force_image_page_fallback_size", dictionary)
+        self._set_from_dictlike("output_directory", dictionary)
+        self._set_from_dictlike("libreoffice_path", dictionary)
+        self._set_from_dictlike("alphabetic_file_sorting", dictionary)
+        self._set_from_dictlike("confirm_exit", dictionary)
+        self._set_from_dictlike("quiet", dictionary)
+        self._set_from_dictlike("recursion_limit", dictionary)
+        self._set_from_dictlike("language", dictionary)
+        if isinstance(dictionary, dict):
+            # whatif should not be read from TOML
+            self._set_from_dictlike("whatif", dictionary)

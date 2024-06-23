@@ -1,0 +1,15 @@
+{
+  "FilesToProcess": "\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Pliki do połączenia \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\u2551",
+  "OutputSaved": "Zapisano w '{0}'.",
+  "UnknownFileType": "Nieznany typ pliku {0}.",
+  "Stitching": "Zszywanie: '{0}'.",
+  "FirstPageSize": "Rozmiar pierwszej strony PDF: {0}.",
+  "GeneratedDefaultConfig": "Utworzono plik domyślnej konfiguracji.",
+  "ConfigNotFound": "Plik konfiguracyjny '{0}' nie został znaleziony. Zszywanie przerwane...",
+  "ConfigSaved": "Zapisano plik konfiguracyjny w '{0}'",
+  "FileSkipped": "Pominięto plik '{0}' ze względu na nieznane rozszerzenie.",
+  "LibreMissing": "Podjęto próbę zszycia pliku dokumentu, ale LibreOffice nie jest zainstlowane. Plik '{0}' będzie pominięty.",
+  "ConfirmExit": "Wciśnij ENTER, aby wyjść...",
+  "InputSorted": "Ścieżki zostały posortowane.",
+  "WhatIfMode": "Program został uruchomiony w trybie \"Co gdyby?\". Wyjściowy plik PDF nie został utworzony."
+}
