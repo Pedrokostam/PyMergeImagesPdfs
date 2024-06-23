@@ -10,7 +10,7 @@ from implementation.commandline import regenerate_default_config, parse_argument
 PROGRAM_DIR = Path(__file__).parent.parent.parent if getattr(sys, "frozen", False) else Path(__file__).parent
 
 if __name__ == "__main__":
-    print(PROGRAM_DIR)
+    # print(PROGRAM_DIR)
     # REGENERATE CONFIG
     default_config_path = PROGRAM_DIR.joinpath("config.toml")
     regenerate_default_config(default_config_path)

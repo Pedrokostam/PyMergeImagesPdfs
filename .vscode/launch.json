@@ -30,6 +30,15 @@
       "console": "integratedTerminal",
       "args": "-c test_config.toml --image-page-fallback-size 999x888 --no-force-image-page-fallback-size --output-directory ZZZZZ --libreoffice-path PPPPPPP --no-alphabetic-file-sorting --no-confirm-exit --recursion-limit 222  --no-quiet  --margin 6565x6565 --save-config kek.toml help.pdf",
       "justMyCode": false
+    },
+    {
+      "name": "Recursion test",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/merge_documents.py",
+      "console": "integratedTerminal",
+      "args": "./test/recursion_test ./test/recursion_test2 --recursion-limit 4 -o rec_test.pdf",
+      "justMyCode": false
     }
   ]
 }

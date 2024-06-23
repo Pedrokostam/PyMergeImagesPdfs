@@ -28,7 +28,7 @@ You can specify both files and directories to merge. Directories will be travers
 
 Simply execute the script `merge_documents.py`. Using it with no arguemnts displays help, which should explain everything well enough.
 
-While you can specify options like `--ouput-directory` as an argument, you can also use a configuration file.
+While you can specify options like `--output-directory` as an argument, you can also use a configuration file.
 
 The script will generate a default configuration file, if it is missing. The file has every option explained. When running the script first takes arguments from the configuration file, then from the command line (command line arguments have priority).
 
