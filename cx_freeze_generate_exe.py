@@ -57,7 +57,7 @@ executables = [Executable("merge_documents.py", base=base, icon="./icon.ico")]
 
 setup(
     name="Document merger",
-    version="1.1",
+    version="2.0",
     description="Merges PDFs, images and document format (MicroSoft office and OpenDocument) into one PDF file.",
     options={"build_exe": build_options},
     executables=executables,
