@@ -1,5 +1,4 @@
 import datetime
-from itertools import pairwise, takewhile
 from pathlib import Path
 from typing import Any, Generator
 from natsort import natsorted, ns
@@ -63,33 +62,32 @@ def is_valid_extensions(path: Path):
     return suffix in all_formats
 
 
-TREE_ROOT = "╚═╗"
 TREE_PREFIX = "   "
 BRANCH = "│  "
+ROOT_BRANCH = "║  "
 NO_BRANCH = "   "
 TEE = "├──"
+ROOT_TEE = "╠══"
 END = "└──"
-ROOT_BRANCH_CONT = "╟"
-SUB_BRANCH_CONT = "├"
-ROOT_BRANCH_END = "╙"
-SUB_BRANCH_END = "└"
-NEST_PADDING = 4
+ROOT_END = "╚══"
+DIR_JUNCTION = "┬"
+ROOT_DIR_JUNCTION = "╤"
 
 
-def recurse_impl(path: Path, collection: list[Path], current_depth: int, recursion_limit: int):
-    if path.is_file():
-        if is_valid_extensions(path):
-            collection.append(path.absolute())
-            # print_entry(path, current_depth)
-    # not a file and recursion limit met
-    if current_depth >= recursion_limit:
-        return
-    if path.is_dir():
-        # print_entry(path, current_depth)
-        collection.append(path.absolute())
-        sorted_entries = sorted(natsorted(path.glob("*"), alg=ns.IGNORECASE), key=lambda x: x.is_dir(), reverse=False)
-        for subentry in sorted_entries:
-            recurse_impl(subentry, collection, current_depth=current_depth + 1, recursion_limit=recursion_limit)
+def get_junction(root: bool = False):
+    return ROOT_DIR_JUNCTION if root else DIR_JUNCTION
+
+
+def get_tee(root: bool = False):
+    return ROOT_TEE if root else TEE
+
+
+def get_end(root: bool = False):
+    return ROOT_END if root else END
+
+
+def get_branch(root: bool = False):
+    return ROOT_BRANCH if root else BRANCH
 
 
 class FoldedPath:
@@ -115,12 +113,14 @@ class FoldedPath:
             self.subpaths[-1].populate(current_depth + 1, max_depth)
 
     def display_form(self, is_root: bool):
+        # junction = get_junction(is_root) if self.is_dir() else ""
+        junction = ""
         if not self.is_dir():
-            color = "\033[33m{0}\033[0m"
+            color = "\033[32m{0}\033[0m"
         else:
             color = "{0}"
         name = str(self.path.absolute()) if is_root else self.path.name
-        return color.format(name)
+        return junction + color.format(name)
 
     def is_dir(self):
         return self.path.is_dir()
@@ -132,9 +132,9 @@ class FoldedPath:
         if get_quiet():
             return
         line = ""
-        for d in depth:
-            line += BRANCH if d else NO_BRANCH
-        line += END if self.is_last else TEE
+        for i, d in enumerate(depth):
+            line += get_branch(i == 0) if d else NO_BRANCH
+        line += get_end(is_root) if self.is_last else get_tee(is_root)
         print(line + self.display_form(is_root))
         for s in self.subpaths:
             s.print(False, depth + [not self.is_last])
@@ -153,6 +153,7 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
         printlog("InputSorted")
         printline()
     folded_paths: list[FoldedPath] = []
+    printlog("FilesToProcess")
     for i, path in enumerate(paths):
         folded_paths.append(FoldedPath(path, i + 1 == len(paths)))
         folded_paths[-1].populate(0, recursion_limit)
