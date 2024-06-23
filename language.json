@@ -1,0 +1,15 @@
+{
+  "FilesToProcess": "\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Files To Merge \u2551\n\u2560\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255d\n\u2551",
+  "OutputSaved": "Saved in '{0}'.",
+  "UnknownFileType": "Unknown file type {0}.",
+  "Stitching": "Stitching '{0}'.",
+  "FirstPageSize": "First PDF page size: {0}.",
+  "GeneratedDefaultConfig": "Generated default configration file.",
+  "ConfigNotFound": "Configuration file '{0}' not found. Aborting...",
+  "ConfigSaved": "Configuration saved to '{0}'",
+  "FileSkipped": "File '{0}' skipped due to unknown extension.",
+  "LibreMissing": "Attempted to merge a document file, but LibreOffice is not installed. File '{0}' is ignored.",
+  "ConfirmExit": "Press ENTER to exit...",
+  "InputSorted": "Sorted all input paths alphabetically.",
+  "WhatIfMode": "Program was run in \"What if?\" mode. No output PDF was created."
+}

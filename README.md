@@ -40,7 +40,17 @@ If you plan on using the app this way, rename `config_dragdrop.toml` to `config.
 
 ## Language
 
-The app will attempt to load a language file if one is present in its folder. First file matching the pattern `language*.json` will be used. Language files can be edited freely, with 2 caveats:
+The app will attempt to load a language file if one is present in its folder. First file matching the pattern `language*.json` will be used. 
+
+To control which language is used you can either rename your preferred file so that it is the first alphabetically (or the only one) or use the argument `language (-l)`.
+
+If that argument was specified (in configuration or command line) the app will attempt to load the language file with the spcified identifier. Failure to load will make it use the default language.
+
+Setting the argument to an empty string will return to loading the first available file.
+
+### Language files
+
+Language files can be edited freely, with 2 caveats:
 
 - a language file should contain all the keys that were present in the original English file. If a key is not present, the default English message will be used.
 - every string should have the same number of matching placeholders as the default English string.

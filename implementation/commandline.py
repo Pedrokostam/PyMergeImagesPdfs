@@ -79,6 +79,12 @@ def parse_arguments(help_override: bool = False):
         action="store_true",
         help="If present, runs the program, but outputs no files. Overrides --quiet",
     )
+    parser.add_argument(
+        "-l",
+        "--language",
+        action="store",
+        help=configuration.LANGUAGE_DESCRIPTION
+    )
     # PARAMETERS
     parameters_args = parser.add_argument_group("Input parameters")
     parameters_args.description = (

@@ -36,8 +36,9 @@ def get_quiet():
     return _QUIET
 
 
-def set_language_from_folder(path: Path):
-    lang_files = sorted(path.glob("language*.json"))
+def set_language_from_file(path: Path, identifier: str | None):
+    pattern = f".{identifier}" if identifier else "*"
+    lang_files = sorted(path.glob(f"language{pattern}.json"))
     # pylint: disable=global-statement
     global CURRENT_LOCALIZATION
     for lang_file in lang_files:

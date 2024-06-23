@@ -64,6 +64,16 @@ ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
     ]
 )
 
+LANGUAGE_DESCRIPTION = " \n".join(
+    [
+        "Which language file to load. Language files should follow "
+        "the 'language.[lang].json' pattern where 'lang' is an identifier for the language.",
+        "This argument accepts this identifier. ",
+        "If the identifier is an empty string, first available file is loaded.",
+        "If the matching file is not found, default language will be used.",
+    ]
+)
+
 CONFIRM_EXIT_DESCRIPTION = "If True, will not exit the program until user confirms."
 
 QUIET_DESCRIPTION = "If True, prints no messages to the console. Overrides --confirm-exit."
@@ -105,6 +115,7 @@ class Configuration:
     quiet: bool = False
     recursion_limit: int = 5
     whatif: bool = False
+    language: str = ""
 
     def add_item(self, doc: TOMLDocument, key: str, description: list[str] | str):
         newline(doc)
@@ -114,7 +125,8 @@ class Configuration:
         for desc_line in description:
             add_comment(doc, desc_line)
         value = getattr(self, key)
-        add_comment(doc, f"Default value: {item(value).as_string()}")
+        default_value = item(value).as_string()
+        add_comment(doc, f"Default value: {default_value}")
         dict_key = key if not key.startswith("_") else key[1:]
         doc.add(dict_key, item(value))
 
@@ -204,6 +216,7 @@ class Configuration:
             "_libreoffice_path",
             LIBREOFFICE_PATH_DESCRIPTION,
         )
+        self.add_item(doc, "language", LANGUAGE_DESCRIPTION)
         self.add_item(doc, "_output_directory", ["Path to the output folder."] + PATH_DISCLAIMER)
         self.add_item(doc, "_margin", MARGIN_DESCRIPTION)
         self.add_item(doc, "_image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)
@@ -241,6 +254,7 @@ class Configuration:
         self._set_from_dictlike("confirm_exit", dictionary)
         self._set_from_dictlike("quiet", dictionary)
         self._set_from_dictlike("recursion_limit", dictionary)
+        self._set_from_dictlike("language", dictionary)
         if isinstance(dictionary, dict):
             # whatif should not be read from TOML
             self._set_from_dictlike("whatif", dictionary)
