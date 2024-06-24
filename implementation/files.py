@@ -100,9 +100,8 @@ class FoldedPath:
     def populate(self, current_depth: int, max_depth: int):
         if not self.path.is_dir():
             return
-        sorted_entries = sorted(
-            natsorted(self.path.glob("*"), alg=ns.IGNORECASE), key=lambda x: x.is_dir(), reverse=False
-        )
+        filtered_entries = [e for e in self.path.glob("*") if e.is_dir() or e.suffix.lower() in all_formats]
+        sorted_entries = sorted(natsorted(filtered_entries, alg=ns.IGNORECASE), key=lambda x: x.is_dir(), reverse=False)
         if current_depth + 1 >= max_depth:
             sorted_entries = [s for s in sorted_entries if not s.is_dir()]
         sorted_count = len(sorted_entries)

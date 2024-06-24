@@ -21,6 +21,7 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
     "ConfirmExit": "Press ENTER to exit...",
     "InputSorted": "Sorted all input paths alphabetically.",
     "WhatIfMode": 'Program was run in "What if?" mode. No output PDF was created.',
+    "NoFilesToProcess": "No supported files to merge. Aborting...",
 }
 
 CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
