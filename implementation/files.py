@@ -1,4 +1,5 @@
 import datetime
+from operator import methodcaller
 from pathlib import Path
 from typing import Any, Generator
 from natsort import natsorted, ns
@@ -90,6 +91,10 @@ def get_branch(root: bool = False):
     return ROOT_BRANCH if root else BRANCH
 
 
+def is_supported_entry(path: Path):
+    return path.is_dir() or path.suffix.lower() in all_formats
+
+
 class FoldedPath:
 
     def __init__(self, path: Path | str, is_last: bool) -> None:
@@ -100,8 +105,10 @@ class FoldedPath:
     def populate(self, current_depth: int, max_depth: int):
         if not self.path.is_dir():
             return
-        filtered_entries = [e for e in self.path.glob("*") if e.is_dir() or e.suffix.lower() in all_formats]
-        sorted_entries = sorted(natsorted(filtered_entries, alg=ns.IGNORECASE), key=lambda x: x.is_dir(), reverse=False)
+
+        filtered_entries = [e for e in self.path.glob("*") if is_supported_entry(e)]
+        dir_checker = methodcaller("is_dir")
+        sorted_entries = sorted(natsorted(filtered_entries, alg=ns.IGNORECASE), key=dir_checker, reverse=False)
         if current_depth + 1 >= max_depth:
             sorted_entries = [s for s in sorted_entries if not s.is_dir()]
         sorted_count = len(sorted_entries)
