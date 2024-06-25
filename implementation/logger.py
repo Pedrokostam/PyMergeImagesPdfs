@@ -16,7 +16,6 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
     "GeneratedDefaultConfig": "Generated default configration file.",
     "ConfigNotFound": "Configuration file '{0}' not found. Aborting...",
     "ConfigSaved": "Configuration saved to '{0}'",
-    "FileSkipped": "File '{0}' skipped due to unknown extension.",
     "LibreMissing": "Attempted to merge a document file, but LibreOffice is not installed. File '{0}' is ignored.",
     "ConfirmExit": "Press ENTER to exit...",
     "InputSorted": "Sorted all input paths alphabetically.",

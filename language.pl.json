@@ -11,5 +11,6 @@
   "LibreMissing": "Podjęto próbę zszycia pliku dokumentu, ale LibreOffice nie jest zainstlowane. Plik '{0}' będzie pominięty.",
   "ConfirmExit": "Wciśnij ENTER, aby wyjść...",
   "InputSorted": "Ścieżki zostały posortowane.",
-  "WhatIfMode": "Program został uruchomiony w trybie \"Co gdyby?\". Wyjściowy plik PDF nie został utworzony."
+  "WhatIfMode": "Program został uruchomiony w trybie \"Co gdyby?\". Wyjściowy plik PDF nie został utworzony.",
+  "NoFilesToProcess": "Nie znaleziono żadnego obłsugiwanego pliku. Program przerwany..."
 }
