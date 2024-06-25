@@ -161,9 +161,10 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
     folded_paths: list[FoldedPath] = []
     printlog("FilesToProcess")
     for i, path in enumerate(paths):
-        folded_paths.append(FoldedPath(path, i + 1 == len(paths)))
-        folded_paths[-1].populate(0, recursion_limit)
-        folded_paths[-1].print()
+        folded_path = FoldedPath(path, i + 1 == len(paths))
+        folded_path.populate(0, recursion_limit)
+        folded_path.print()
+        folded_paths.append(folded_path)
     files = [s.path for f in folded_paths for s in f.get_files()]
     return files
 
