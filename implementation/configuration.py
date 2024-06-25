@@ -10,6 +10,12 @@ from .dimension import Dimension
 # register fallback string encoder. Dimension can be parsed to and from string
 register_encoder(lambda x: item(str(x)))
 
+
+class InvalidDimensionError(ValueError):
+    def __init__(self, var_name: str):
+        self.args = (f"{var_name}: Instance is neither str nor Dimension",)
+
+
 PATH_DISCLAIMER = [
     "Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').",
     "You can use both forward and backward slashes. Backward slashes need to be doubled."
@@ -149,7 +155,7 @@ class Configuration:
             return self._margin
         if isinstance(self._margin, str):
             return Dimension.from_str(self._margin)
-        raise ValueError()
+        raise InvalidDimensionError('margin')
 
     @margin.setter
     def margin(self, value: str | Dimension | None):
@@ -165,7 +171,7 @@ class Configuration:
             if p_size != (-1, -1):
                 return Dimension(p_size[0], p_size[1], "pt")
             return Dimension.from_str(self._image_page_fallback_size)
-        raise ValueError()
+        raise InvalidDimensionError('image_page_fallback_size')
 
     @image_page_fallback_size.setter
     def image_page_fallback_size(self, value: str | Dimension | None):
