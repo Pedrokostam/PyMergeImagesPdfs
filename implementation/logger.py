@@ -1,7 +1,10 @@
 from pathlib import Path
 import json
 
+import tqdm
+
 _QUIET: bool = False
+_WRITER: tqdm.tqdm | None = None
 
 _ENGLISH_LOCALIZATION: dict[str, str] = {
     "FilesToProcess": """
@@ -11,7 +14,9 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
 ║""",
     "OutputSaved": "Saved in '{0}'.",
     "UnknownFileType": "Unknown file type {0}.",
-    "Stitching": "Stitching '{0}'.",
+    "MergedFile": "Merged: '{0}'.",
+    "Merging": "Merging... ({0} pages)",
+    "EnumeratingInput": "Enumerating files...",
     "FirstPageSize": "First PDF page size: {0}.",
     "GeneratedDefaultConfig": "Generated default configration file.",
     "ConfigNotFound": "Configuration file '{0}' not found. Aborting...",
@@ -24,6 +29,12 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
 }
 
 CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
+
+
+def set_writer(writer: tqdm.tqdm | None):
+    # pylint: disable=global-statement
+    global _WRITER
+    _WRITER = writer
 
 
 def set_quiet(is_quiet: bool):
@@ -58,13 +69,20 @@ def log(msg_key: str, *args, **kwargs):
         return _ENGLISH_LOCALIZATION[msg_key].format(*args, **kwargs)
 
 
-def printline():
+def _print(s):
     if _QUIET:
         return
-    print("")
+    if _WRITER:
+        _WRITER.write(str(s))
+    else:
+        print(s)
+
+
+def printline():
+    _print("")
 
 
 def printlog(msg_key: str, *args, **kwargs):
     log_or_not = log(msg_key, *args, **kwargs)
     if log_or_not:
-        print(log_or_not)
+        _print(log_or_not)

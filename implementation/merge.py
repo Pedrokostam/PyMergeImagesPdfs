@@ -4,8 +4,9 @@ import os
 from pathlib import Path
 from typing import Sequence
 import pymupdf
+from tqdm import tqdm
 from .configuration import Configuration
-from .logger import printline, printlog
+from .logger import printline, printlog, log, set_writer
 from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 
@@ -41,8 +42,9 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         dim = Dimension(actual_pagesize.width, actual_pagesize.height, "pt")
         printlog("FirstPageSize", dim)
         printline()
-    for file in all_filepaths:
-        printlog("Stitching", file)
+    bar = tqdm(all_filepaths, desc=log("Merging", 0))
+    set_writer(bar)
+    for file in bar:
         if is_pdf_extension(file):
             output_file.insert_file(file)
         elif is_image_extension(file):
@@ -51,6 +53,10 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
             libre_to_pdf(file, config, output_file, dry_run=config.whatif)
         else:
             printlog("UnknownFileType", file)
+        bar.set_description(log("Merging", output_file.page_count))
+        printlog("MergedFile", file)
+    bar.close()
+    set_writer(None)
     output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
     if not config.whatif:
         output_file.save(output_path)  # save can handle pathlib.Path

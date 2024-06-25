@@ -2,8 +2,9 @@ import datetime
 from operator import methodcaller
 from pathlib import Path
 from typing import Any, Generator
+from tqdm import tqdm
 from natsort import natsorted, ns
-from .logger import get_quiet, printline, printlog
+from .logger import get_quiet, printline, printlog, log, set_writer
 
 # fmt: off
 # extensions copy-pasted from Open File windows in LibreOffice
@@ -134,16 +135,19 @@ class FoldedPath:
     def __repr__(self):
         return f"{self.path} - {len(self.subpaths)}"
 
-    def print(self, is_root: bool = True, depth: list[bool] | None = None):
+    def print(self, is_root: bool = True, depth: list[bool] | None = None, writer: tqdm | None = None):
         if get_quiet():
             return
         line = ""
         for i, d in enumerate(depth or []):
             line += get_branch(i == 0) if d else NO_BRANCH
         line += get_end(is_root) if self.is_last else get_tee(is_root)
-        print(line + self.display_form(is_root))
+        if writer:
+            writer.write(line + self.display_form(is_root))
+        else:
+            print(line + self.display_form(is_root))
         for s in self.subpaths:
-            s.print(False, (depth or []) + [not self.is_last])
+            s.print(False, (depth or []) + [not self.is_last], writer=writer)
 
     def get_files(self) -> Generator["FoldedPath", Any, None]:
         for s in self.subpaths:
@@ -159,13 +163,17 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
         printlog("InputSorted")
         printline()
     folded_paths: list[FoldedPath] = []
+    bar = tqdm(enumerate(paths), desc=log("EnumeratingInput"))
+    set_writer(bar)
     printlog("FilesToProcess")
-    for i, path in enumerate(paths):
+    for i, path in bar:
         folded_path = FoldedPath(path, i + 1 == len(paths))
         folded_path.populate(0, recursion_limit)
-        folded_path.print()
+        folded_path.print(writer=bar)
         folded_paths.append(folded_path)
     files = [s.path for f in folded_paths for s in f.get_files()]
+    bar.close()
+    set_writer(None)
     return files
 
 

@@ -32,6 +32,7 @@ if __name__ == "__main__":
     if not files_to_process:
         printlog("NoFilesToProcess")
         sys.exit()
+    printlog("FilesToProcess", total=len(files_to_process))
     # GET OUTPUT PATH
     if args.output_file:  # Output_file has precedence if specified
         output = Path(args.output_file)
