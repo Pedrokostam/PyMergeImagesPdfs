@@ -4,8 +4,9 @@ import sys
 import rich_argparse
 from implementation.configuration import Configuration
 from implementation import configuration
+from .custom_rich_argparse_formatters import RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter
 from implementation.logger import printlog, log, set_quiet
-
+from colorama import just_fix_windows_console
 
 def wait_for_confirm(wait: bool):
     if wait:
@@ -34,11 +35,12 @@ def load_config(cmd_args, default_config_path):
 
 
 def parse_arguments(help_override: bool = False):
+    just_fix_windows_console()
     rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "magenta"
-    rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "b i"
-    rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange b"
+    rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "bold italic"
+    rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange bold"
     parser = argparse.ArgumentParser(
-        formatter_class=(lambda prog: rich_argparse.RichHelpFormatter(prog, max_help_position=12)),
+        formatter_class=(lambda prog: RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(prog, max_help_position=8)),
         add_help=False,
         prefix_chars="-/",
         # formatter_class=argparse.RawTextHelpFormatter,

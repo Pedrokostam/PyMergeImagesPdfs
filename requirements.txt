@@ -4,3 +4,4 @@ rich_argparse==1.5.2
 tomlkit==0.12.5
 tqdm==4.66.4
 cx_Freeze==7.1.1
+colorama==0.4.6
