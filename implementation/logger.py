@@ -37,6 +37,10 @@ def set_writer(writer: tqdm.tqdm | None):
     _WRITER = writer
 
 
+def get_writer():
+    return _WRITER
+
+
 def set_quiet(is_quiet: bool):
     # pylint: disable=global-statement
     global _QUIET
