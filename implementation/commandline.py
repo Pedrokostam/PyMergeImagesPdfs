@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any
 
 import rich_argparse
-from rich.markdown import Markdown
 import rich.terminal_theme
 from colorama import just_fix_windows_console
 
@@ -13,22 +12,33 @@ from implementation import configuration
 from implementation.configuration import Configuration
 from implementation.logger import print_translated, set_quiet, translate
 
-from .custom_rich_argparse_formatters import RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter
+from .custom_rich_argparse_formatters import RawTextIndentArgumentsDefaultRichHelpFormatter
 
 
 class Dummy:
+    """Wrapper class, which is displayed as the inner object,
+    but allows to check if the parameter has been set from the command line,
+    or is the default value."""
+
     def __init__(self, obj) -> None:
         self._obj = obj
 
     def __repr__(self):
-        if self._obj=='':
+        if self._obj == "":
             return '""'
         return repr(self._obj)
 
     def __str__(self):
-        if self._obj=='':
+        if self._obj == "":
             return '""'
         return str(self._obj)
+
+    @staticmethod
+    def nullify_dummies(args: argparse.Namespace):
+        """Checks all arguments to see if they are a Dummy and replaces it with None if it is."""
+        for k, v in vars(args).items():
+            if isinstance(v, Dummy):
+                setattr(args, k, None)
 
 
 DESCRIPTION = """
@@ -40,7 +50,7 @@ Most of the parameters can be loaded from a configuration file.\
     
 A configuration file with default values is automatically created if it does not exists.\
     
-Its path is `config.toml`.
+Its path is config.toml. It will always be loaded when the program runs (unless a different file is specified via --config)
 
 Flag options have their negative variant to override parameters loaded from the configuration file.\
 
@@ -50,9 +60,9 @@ Default values shown in help are not loaded from any configuration file.
 """
 
 EPILOG = """
-To use the program by *drag&dropping* files and folders onto it, enable the *config_dragdrop.toml* which should be provided.
+To use the program by *drag&dropping* files and folders onto it, enable the config_dragdrop.toml which should be provided.
 
-To enable change it name to *config.toml*, or add `--config config_dragdrop.toml` as an arguments to the shortcut or script you want to drop file onto.
+To enable change it name to config.toml, or add --config config_dragdrop.toml as an arguments to the shortcut or script you want to drop file onto.
 """
 
 
@@ -99,13 +109,14 @@ def parse_arguments(help_override: bool = False):
     rich_argparse.RichHelpFormatter.styles["argparse.syntax"] = "red"
     rich_argparse.RichHelpFormatter.styles["argparse.default"] = "italic dim"
     rich_argparse.RichHelpFormatter.styles["argparse.help"] = "default"
+    rich_argparse.RichHelpFormatter.styles["argparse.toml"] = "bold green_yellow"
+    rich_argparse.RichHelpFormatter.highlights.append(r"(?i)\b(?P<toml>(\w+\.)?toml)\b")
+    rich_argparse.RichHelpFormatter.group_name_formatter
     dummy_config = Configuration()
-    epilog: Any = Markdown(inspect.cleandoc(EPILOG))
-    description: Any = Markdown(inspect.cleandoc(DESCRIPTION))
+    epilog: Any = inspect.cleandoc(EPILOG)
+    description: Any = inspect.cleandoc(DESCRIPTION)
     parser = argparse.ArgumentParser(
-        formatter_class=(
-            lambda prog: RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(prog, max_help_position=8)
-        ),
+        formatter_class=(lambda prog: RawTextIndentArgumentsDefaultRichHelpFormatter(prog, max_help_position=8)),
         add_help=False,
         prefix_chars="-/",
         # formatter_class=argparse.RawTextHelpFormatter,
@@ -115,18 +126,18 @@ def parse_arguments(help_override: bool = False):
         epilog=epilog,
     )
     parser.add_argument(
-    "--generate-help-preview",
-    action=rich_argparse.HelpPreviewAction,
-    path="help-preview.svg",  # (optional) or "help-preview.html" or "help-preview.txt"
-    export_kwds={"theme": rich.terminal_theme.MONOKAI},  # (optional) keywords passed to console.save_... methods
-)
+        "--generate-help-preview",
+        action=rich_argparse.HelpPreviewAction,
+        path="help-preview.html",  # (optional) or "help-preview.html" or "help-preview.txt"
+        export_kwds={"theme": rich.terminal_theme.MONOKAI},  # (optional) keywords passed to console.save_... methods
+    )
     parser.add_argument(
         "-h",
         "-?",
         "--help",
         "/?",
         action="help",
-        help="Show this help message and exit.",
+        help="Show this help message and exit. Running the app without any files does the same.",
     )
     # CORE INPUT
     parser.add_argument(
@@ -142,12 +153,13 @@ def parse_arguments(help_override: bool = False):
     parser.add_argument(
         "-s",
         "--save-config",
-        metavar="NEW_CONFIG_PATH",
+        metavar="FILEPATH or -",
         action="store",
         type=str,
-        default=Dummy(False),
-        help="If a path is provided, all input parameters are saved as a config file, under the given path.\n"
-        "Input parameters are a union of commandline parameters as well as the loaded configuration file's parameters.",
+        help="If a path is provided, all input parameters are saved as a TOML configuration file, under the given path.\n"
+        "Input parameters are a union of commandline parameters as well as the loaded configuration file's parameters.\n"
+        "To send the TOML text to standard output, specify '-' as the destination.\n"
+        "After saving the condfiguration the program exits.",
     )
     parser.add_argument(
         "--confirm-exit",
@@ -167,14 +179,14 @@ def parse_arguments(help_override: bool = False):
         "--what-if",
         "--whatif",
         action="store_true",
-        default=Dummy(dummy_config.whatif),
+        default=Dummy(dummy_config.what_if),
         help="If present, runs the program, but outputs no files. Overrides --quiet.",
     )
     parser.add_argument(
         "-l",
         "--language",
         action="store",
-        metavar="LANG",
+        metavar="IDENTIFIER",
         help=configuration.LANGUAGE_DESCRIPTION,
         default=Dummy(dummy_config.language),
     )
@@ -255,25 +267,24 @@ def parse_arguments(help_override: bool = False):
         action="store",
         default=Dummy(dummy_config.output_directory),
         help="Path of the directory where the output file will be placed. "
-        'Filename will be generated based on time and language.\n'
-        'This path will always be treated as a folder path, even if you provide an extension.',
+        "Filename will be generated based on time and language.\n"
+        "This path will always be treated as a folder path, even if you provide an extension.",
     )
     exclusive_output.add_argument(
         "-o",
         "-of",
         "--output-file",
+        metavar="OUTPUT_FILEPATH",
         action="store",
         help="Path of the output file. Relative to the current working directory.\n"
-        'This path will always be treated as a file path, even if you do not provide an extension.\n'
+        "This path will always be treated as a file path, even if you do not provide an extension.\n"
         'Extension will be changed to ".pdf/.png" as needed.',
     )
     args = parser.parse_args()
-    for k, v in vars(args).items():
-        if isinstance(v, Dummy):
-            setattr(args, k, None)
-    if args.whatif:
+    Dummy.nullify_dummies(args)
+    if args.what_if:
         args.quiet = False
-    if not args.files or help_override:
+    if help_override or (not args.files and not args.save_config):
         parser.print_help()
         sys.exit()
     set_quiet(args.quiet)

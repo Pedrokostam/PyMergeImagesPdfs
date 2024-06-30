@@ -5,15 +5,12 @@ from implementation.merge import merge_documents
 from implementation.files import generate_name, recurse_files
 from implementation.logger import print_newline, set_language_from_file, print_translated
 from implementation.commandline import regenerate_default_config, parse_arguments, load_config, wait_for_confirm
-from implementation.progress_reporting import create_progress_bar
 
 # if main script is in a folder called _internal, it means it's part of a generated exe
 # it means that langueage and config files should be one level above, where the .exe is.
 PROGRAM_DIR = Path(__file__).parent.parent.parent if getattr(sys, "frozen", False) else Path(__file__).parent
 
 if __name__ == "__main__":
-    b = create_progress_bar([1, 2, 3])
-    b.close()
     # print(PROGRAM_DIR)
     # REGENERATE CONFIG
     default_config_path = PROGRAM_DIR.joinpath("config.toml")
@@ -27,10 +24,10 @@ if __name__ == "__main__":
     # RELOAD LANGUAGE IF NEEDED
     if config.language != args.language:
         set_language_from_file(PROGRAM_DIR, config.language)
-
     # MAYBE SAVE CONFIG
-    if args.save_config:
+    if args.save_config is not None:
         config.save_config(args.save_config)
+        sys.exit()
     # GET FILES
     files_to_process = recurse_files(args.files, config.alphabetic_file_sorting, config.recursion_limit)
     if not files_to_process:
@@ -43,7 +40,7 @@ if __name__ == "__main__":
         output = generate_name(config.output_directory_expanded(PROGRAM_DIR))
     # MERGE
     merge_documents(files_to_process, output, config)
-    if config.whatif:
+    if config.what_if:
         print_newline()
         print_translated("WhatIfMode")
     # WAIT FOR CONFIRM

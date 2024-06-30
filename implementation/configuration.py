@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
+import sys
 from typing import Sequence
 from tomlkit import TOMLDocument, comment, document, nl, item, dump, load, register_encoder
 import pymupdf
@@ -73,7 +74,7 @@ ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
 LANGUAGE_DESCRIPTION = " \n".join(
     [
         "Which language file to load. Language files should follow "
-        "the 'language.{LANG}.json' pattern where 'LANG' is an identifier for the language.",
+        "the 'language.{IDENTIFIER}.json' pattern where 'IDENTIFIER' is an identifier for the language.",
         "This argument accepts this identifier. ",
         "If the identifier is an empty string, first available file is loaded.",
         "If the matching file is not found, default language will be used.",
@@ -120,7 +121,7 @@ class Configuration:
     confirm_exit: bool = False
     quiet: bool = False
     recursion_limit: int = 5
-    whatif: bool = False
+    what_if: bool = False
     language: str = ""
 
     def add_item(self, doc: TOMLDocument, key: str, description: list[str] | str):
@@ -235,8 +236,11 @@ class Configuration:
         self.add_item(doc, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
         self.add_item(doc, "quiet", QUIET_DESCRIPTION)
         self.add_item(doc, "recursion_limit", RECURSION_DESCRIPTION)
-        with open(str(destination), "w", encoding="utf8") as fp:
-            dump(doc, fp)
+        if destination == "-":
+            dump(doc, sys.stdout)
+        else:
+            with open(destination, "w", encoding="utf8") as fp:
+                dump(doc, fp)
         print_translated("ConfigSaved", destination)
 
     def update_from_toml(self, path: Path | str):
