@@ -5,11 +5,10 @@ from pathlib import Path
 from time import sleep
 from typing import Sequence
 import pymupdf
-from tqdm import tqdm
 
 from .progress_reporting import close_progress_bar, create_progress_bar
 from .configuration import Configuration
-from .logger import get_quiet, print_newline, print_translated, translate, set_writer
+from .logger import print_newline, print_translated, translate
 from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 

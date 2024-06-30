@@ -1,4 +1,4 @@
-from typing import Any, Iterable, TypeVar
+from typing import Iterable, TypeVar
 from tqdm.autonotebook import tqdm
 
 from .logger import get_writer, set_writer
@@ -44,7 +44,7 @@ def create_progress_bar(iterable: Iterable[T] | None, desc: str | None = None):
         desc=desc,
         maxinterval=2,
         bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]",
-        leave=False
+        leave=False,
     )
     set_writer(__BAR)
     return __BAR

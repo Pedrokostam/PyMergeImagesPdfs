@@ -207,6 +207,7 @@ def parse_arguments(help_override: bool = False):
         "--image-page-fallback-size",
         action="store",
         metavar="PAGE_SIZE",
+        # pylint: disable=protected-access
         default=Dummy(dummy_config._image_page_fallback_size),
         help=configuration.IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
     )
@@ -215,6 +216,7 @@ def parse_arguments(help_override: bool = False):
         "--margin",
         action="store",
         help=configuration.MARGIN_DESCRIPTION,
+        # pylint: disable=protected-access
         default=Dummy(dummy_config._margin),
     )
     parameters_args.add_argument(
@@ -234,6 +236,7 @@ def parse_arguments(help_override: bool = False):
     parameters_args.add_argument(
         "--libreoffice-path",
         nargs="*",
+        # pylint: disable=protected-access
         default=Dummy(dummy_config._libreoffice_path),
         help=configuration.LIBREOFFICE_PATH_DESCRIPTION,
     )

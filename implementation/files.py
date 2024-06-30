@@ -2,7 +2,6 @@ import datetime
 from operator import methodcaller
 from pathlib import Path
 from typing import Any, Generator
-from tqdm import tqdm
 from natsort import natsorted, ns
 from .progress_reporting import create_progress_bar, close_progress_bar
 from .logger import get_quiet, print_message, print_newline, print_translated, translate, set_writer

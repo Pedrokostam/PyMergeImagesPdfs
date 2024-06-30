@@ -9,7 +9,7 @@ from implementation.logger import _ENGLISH_LOCALIZATION
 # fine tuning.
 
 
-sys.excepthook = lambda et, e, t: print("%s: %s" % (et.__name__, e))
+sys.excepthook = lambda et, e, t: print(f"{et.__name__}: {e}")
 
 SETUP_ROOT = Path(__file__).parent
 

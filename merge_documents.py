@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 from implementation.merge import merge_documents
 from implementation.files import generate_name, recurse_files
-from implementation.logger import print_newline, set_language_from_file, print_translated, print_message
+from implementation.logger import print_newline, set_language_from_file, print_translated
 from implementation.commandline import regenerate_default_config, parse_arguments, load_config, wait_for_confirm
 from implementation.progress_reporting import create_progress_bar
 
