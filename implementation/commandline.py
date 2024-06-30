@@ -105,13 +105,13 @@ def parse_arguments(help_override: bool = False):
     rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "spring_green1 italic"
     rich_argparse.RichHelpFormatter.styles["argparse.args"] = "deep_sky_blue1 bold"
     rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "bold italic orange_red1"
+    rich_argparse.RichHelpFormatter.styles["argparse.text"] = "default"
     rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "orange3 bold"
     rich_argparse.RichHelpFormatter.styles["argparse.syntax"] = "red"
     rich_argparse.RichHelpFormatter.styles["argparse.default"] = "italic dim"
     rich_argparse.RichHelpFormatter.styles["argparse.help"] = "default"
-    rich_argparse.RichHelpFormatter.styles["argparse.toml"] = "bold green_yellow"
+    rich_argparse.RichHelpFormatter.styles["argparse.toml"] = "bold slate_blue1"
     rich_argparse.RichHelpFormatter.highlights.append(r"(?i)\b(?P<toml>(\w+\.)?toml)\b")
-    rich_argparse.RichHelpFormatter.group_name_formatter
     dummy_config = Configuration()
     epilog: Any = inspect.cleandoc(EPILOG)
     description: Any = inspect.cleandoc(DESCRIPTION)
