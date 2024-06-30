@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 from implementation.merge import merge_documents
 from implementation.files import generate_name, recurse_files
-from implementation.logger import printline, set_language_from_file, printlog
+from implementation.logger import print_newline, set_language_from_file, print_translated, print_message
 from implementation.commandline import regenerate_default_config, parse_arguments, load_config, wait_for_confirm
 from implementation.progress_reporting import create_progress_bar
 
@@ -12,7 +12,7 @@ from implementation.progress_reporting import create_progress_bar
 PROGRAM_DIR = Path(__file__).parent.parent.parent if getattr(sys, "frozen", False) else Path(__file__).parent
 
 if __name__ == "__main__":
-    b =create_progress_bar([1,2,3])
+    b = create_progress_bar([1, 2, 3])
     b.close()
     # print(PROGRAM_DIR)
     # REGENERATE CONFIG
@@ -34,9 +34,8 @@ if __name__ == "__main__":
     # GET FILES
     files_to_process = recurse_files(args.files, config.alphabetic_file_sorting, config.recursion_limit)
     if not files_to_process:
-        printlog("NoFilesToProcess")
+        print_translated("NoFilesToProcess")
         sys.exit()
-    printlog("FilesToProcess", total=len(files_to_process))
     # GET OUTPUT PATH
     if args.output_file:  # Output_file has precedence if specified
         output = Path(args.output_file)
@@ -45,7 +44,7 @@ if __name__ == "__main__":
     # MERGE
     merge_documents(files_to_process, output, config)
     if config.whatif:
-        printline()
-        printlog("WhatIfMode")
+        print_newline()
+        print_translated("WhatIfMode")
     # WAIT FOR CONFIRM
     wait_for_confirm(wait=config.confirm_exit and not config.quiet)

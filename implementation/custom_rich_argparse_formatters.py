@@ -84,19 +84,19 @@ class RawDescriptionNewLineDefaultRichHelpFormatter(rich_argparse.RawTextRichHel
         prevent duplicates or cases where it wouldn't make sense to the end
         user.
         """
-        help = action.help
-        if help is None:
-            help = ""
+        help_str = action.help
+        if help_str is None:
+            help_str = ""
 
-        if "%(default)" not in help:
+        if "%(default)" not in help_str:
             if action.default is not SUPPRESS:
                 defaulting_nargs = [OPTIONAL, ZERO_OR_MORE]
                 if action.option_strings or action.nargs in defaulting_nargs:
-                    if whitespace_checker.match(help):
-                        help += "(default: %(default)s)"
+                    if whitespace_checker.match(help_str):
+                        help_str += "(default: %(default)s)"
                     else:
-                        help += "\n(default: %(default)s)"
-        return help
+                        help_str += "\n(default: %(default)s)"
+        return help_str
 
 
 class RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(

@@ -1,19 +1,21 @@
-from typing import Any, Iterable
+from typing import Any, Iterable, TypeVar
 from tqdm.autonotebook import tqdm
 
 from .logger import get_writer, set_writer
 
 
 # (self, iterable=None, desc=None, total=None, leave=True, file=None,
-#                  ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
-#                  ascii=None, disable=False, unit='it', unit_scale=False,
-#                  dynamic_ncols=False, smoothing=0.3, bar_format=None, initial=0,
-#                  position=None, postfix=None, unit_divisor=1000, write_bytes=False,
-#                  lock_args=None, nrows=None, colour=None, delay=0.0, gui=False,
-#                  **kwargs)
+#        ncols=None, mininterval=0.1, maxinterval=10.0, miniters=None,
+#        ascii=None, disable=False, unit='it', unit_scale=False,
+#        dynamic_ncols=False, smoothing=0.3, bar_format=None, initial=0,
+#        position=None, postfix=None, unit_divisor=1000, write_bytes=False,
+#        lock_args=None, nrows=None, colour=None, delay=0.0, gui=False,
+#        **kwargs)
+
+T = TypeVar("T")
 
 
-class _TqdmWrapper(tqdm):
+class __TqdmWrapper(tqdm):
     def __init__(self, **kwargs):
         """
         DO NOT INSTANTIATE IT MANUALLY
@@ -29,16 +31,26 @@ class _TqdmWrapper(tqdm):
         super().close()
 
 
-_BAR: _TqdmWrapper | None = None
+__BAR: __TqdmWrapper | None | tqdm = None
 
 
-def create_progress_bar(iterable: Iterable[Any]):
-    global _BAR
-    if _BAR:
-        _BAR.close()
-    _BAR = _TqdmWrapper(
+def create_progress_bar(iterable: Iterable[T] | None, desc: str | None = None):
+    global __BAR  # pylint: disable=global-statement
+    if __BAR:
+        __BAR.close()
+    __BAR = tqdm(
         iterable=iterable,
         mininterval=0.1,
+        desc=desc,
         maxinterval=2,
+        bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}]",
+        leave=False
     )
-    return _BAR
+    set_writer(__BAR)
+    return __BAR
+
+
+def close_progress_bar():
+    if __BAR:
+        __BAR.close()
+    set_writer(None)

@@ -39,6 +39,15 @@
       "console": "integratedTerminal",
       "args": "./test/recursion_test ./test/recursion_test2 --recursion-limit 4 -o rec_test.pdf",
       "justMyCode": false
+    },
+    {
+      "name": "Debug exe generation",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/cx_freeze_generate_exe.py",
+      "console": "integratedTerminal",
+      "args": "build",
+      "justMyCode": false
     }
   ]
 }

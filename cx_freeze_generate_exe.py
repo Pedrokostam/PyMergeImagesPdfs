@@ -43,7 +43,7 @@ def check_logger():
 
 def find_unknown_identifiers(keys, py_file, line_number, line):
     path = py_file.relative_to(SETUP_ROOT)
-    matches = re.findall(r"""log\(\s*["'](?P<identifier>\w+)["']""", line)
+    matches = re.findall(r"""translated?\(\s*["'](?P<identifier>\w+)["']""", line)
     for match in matches:
         if match not in keys:
             raise InvalidIndentifierError(
@@ -63,13 +63,17 @@ def update_language() -> list[str]:
             for key, value in _ENGLISH_LOCALIZATION.items():
                 if key not in lang_dict:
                     raise MissingRequiredIdentifierError(f"Localization dict {relative} does not have key {key}!")
-                placeholder_count_target = len(re.findall("{.+}", value))
-                placeholder_count_actual = len(re.findall("{.+}", lang_dict[key]))
-                if placeholder_count_target != placeholder_count_actual:
+                placeholder_target = set(re.findall("{[^}]+}", value))
+                placeholder_actual = set(re.findall("{[^}]+}", lang_dict[key]))
+                different_placeholders = placeholder_target.difference(placeholder_actual)
+                # placeholder_count_target = len(re.findall("{.+}", value))
+                # placeholder_count_actual = len(re.findall("{.+}", lang_dict[key]))
+                if different_placeholders:
                     raise MismatchedPlaceholdersError(
                         f"Key {key} in {relative} has "
                         "different number of placeholders than the English version!"
-                        f"({lang_dict[key]} vs. {value})"
+                        f"(default has: {list(placeholder_target)}; "
+                        f"{foreign_lang_file.stem} has: {list(placeholder_actual)})"
                     )
             difference = set(lang_dict.keys()).difference(_ENGLISH_LOCALIZATION.keys())
             if difference:

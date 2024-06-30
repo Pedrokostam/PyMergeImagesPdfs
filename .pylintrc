@@ -1,6 +1,7 @@
 [MAIN]
 
 disable=
+    E0015, # silence warning about unrecognized options
     C0114, # missing-module-docstring
     C0115, # missing-class-docstring
     C0116, # missing-function-docstring

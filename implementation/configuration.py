@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Sequence
 from tomlkit import TOMLDocument, comment, document, nl, item, dump, load, register_encoder
 import pymupdf
-from .logger import printlog
+from .logger import print_translated
 from .dimension import Dimension
 
 # register fallback string encoder. Dimension can be parsed to and from string
@@ -18,7 +18,7 @@ class InvalidDimensionError(ValueError):
 
 PATH_DISCLAIMER = [
     "Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').",
-    "You can use both forward and backward slashes. Backward slashes need to be doubled."
+    "You can use both forward and backward slashes. Backward slashes need to be doubled.",
     "Can be relative (to the current working directory).",
 ]
 
@@ -73,7 +73,7 @@ ALPHABETIC_FILE_SORTING_DESCRIPTION = " \n".join(
 LANGUAGE_DESCRIPTION = " \n".join(
     [
         "Which language file to load. Language files should follow "
-        "the 'language.[lang].json' pattern where 'lang' is an identifier for the language.",
+        "the 'language.{LANG}.json' pattern where 'LANG' is an identifier for the language.",
         "This argument accepts this identifier. ",
         "If the identifier is an empty string, first available file is loaded.",
         "If the matching file is not found, default language will be used.",
@@ -155,7 +155,7 @@ class Configuration:
             return self._margin
         if isinstance(self._margin, str):
             return Dimension.from_str(self._margin)
-        raise InvalidDimensionError('margin')
+        raise InvalidDimensionError("margin")
 
     @margin.setter
     def margin(self, value: str | Dimension | None):
@@ -171,7 +171,7 @@ class Configuration:
             if p_size != (-1, -1):
                 return Dimension(p_size[0], p_size[1], "pt")
             return Dimension.from_str(self._image_page_fallback_size)
-        raise InvalidDimensionError('image_page_fallback_size')
+        raise InvalidDimensionError("image_page_fallback_size")
 
     @image_page_fallback_size.setter
     def image_page_fallback_size(self, value: str | Dimension | None):
@@ -237,7 +237,7 @@ class Configuration:
         self.add_item(doc, "recursion_limit", RECURSION_DESCRIPTION)
         with open(str(destination), "w", encoding="utf8") as fp:
             dump(doc, fp)
-        printlog("ConfigSaved", destination)
+        print_translated("ConfigSaved", destination)
 
     def update_from_toml(self, path: Path | str):
         """Opens specified TOML file and updates the properites of this instance with the values from TOML.

@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any, Generator
 from tqdm import tqdm
 from natsort import natsorted, ns
-from .logger import get_quiet, printline, printlog, log, set_writer
+from .progress_reporting import create_progress_bar, close_progress_bar
+from .logger import get_quiet, print_message, print_newline, print_translated, translate, set_writer
 
 # fmt: off
 # extensions copy-pasted from Open File windows in LibreOffice
@@ -102,11 +103,12 @@ class FoldedPath:
         self.path = Path(path)
         self.subpaths: list[FoldedPath] = []
         self.is_last = is_last
+        self.has_files_or_is_file=False
 
     def populate(self, current_depth: int, max_depth: int):
         if not self.path.is_dir():
+            self.has_files_or_is_file=True
             return
-
         filtered_entries = [e for e in self.path.glob("*") if is_supported_entry(e)]
         dir_checker = methodcaller("is_dir")
         sorted_entries = sorted(natsorted(filtered_entries, alg=ns.IGNORECASE), key=dir_checker, reverse=False)
@@ -118,6 +120,7 @@ class FoldedPath:
                 continue
             self.subpaths.append(FoldedPath(entry, i + 1 == sorted_count))
             self.subpaths[-1].populate(current_depth + 1, max_depth)
+        self.has_files_or_is_file = any((s.has_files_or_is_file for s in self.subpaths))
 
     def display_form(self, is_root: bool):
         # junction = get_junction(is_root) if self.is_dir() else ""
@@ -135,19 +138,16 @@ class FoldedPath:
     def __repr__(self):
         return f"{self.path} - {len(self.subpaths)}"
 
-    def print(self, is_root: bool = True, depth: list[bool] | None = None, writer: tqdm | None = None):
+    def print(self, is_root: bool = True, depth: list[bool] | None = None):
         if get_quiet():
             return
         line = ""
         for i, d in enumerate(depth or []):
             line += get_branch(i == 0) if d else NO_BRANCH
         line += get_end(is_root) if self.is_last else get_tee(is_root)
-        if writer:
-            writer.write(line + self.display_form(is_root))
-        else:
-            print(line + self.display_form(is_root))
+        print_message(line + self.display_form(is_root))
         for s in self.subpaths:
-            s.print(False, (depth or []) + [not self.is_last], writer=writer)
+            s.print(False, (depth or []) + [not self.is_last])
 
     def get_files(self) -> Generator["FoldedPath", Any, None]:
         for s in self.subpaths:
@@ -160,20 +160,19 @@ class FoldedPath:
 def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
     if sort_paths:
         paths = sorted(paths, key=lambda x: x.casefold())
-        printlog("InputSorted")
-        printline()
+        print_translated("InputSorted")
+        print_newline()
     folded_paths: list[FoldedPath] = []
-    bar = tqdm(enumerate(paths), desc=log("EnumeratingInput"))
-    set_writer(bar)
-    printlog("FilesToProcess")
-    for i, path in bar:
+    progress_bar = create_progress_bar(enumerate(paths),translate("EnumeratingInput"))
+    set_writer(progress_bar)
+    print_translated("FilesToProcess")
+    for i, path in progress_bar:
         folded_path = FoldedPath(path, i + 1 == len(paths))
         folded_path.populate(0, recursion_limit)
-        folded_path.print(writer=bar)
         folded_paths.append(folded_path)
+        folded_path.print()
     files = [s.path for f in folded_paths for s in f.get_files()]
-    bar.close()
-    set_writer(None)
+    close_progress_bar()
     return files
 
 

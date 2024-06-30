@@ -1,17 +1,65 @@
 import argparse
-from pathlib import Path
+import inspect
 import sys
+from pathlib import Path
+from typing import Any
+
 import rich_argparse
-from implementation.configuration import Configuration
-from implementation import configuration
-from .custom_rich_argparse_formatters import RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter
-from implementation.logger import printlog, log, set_quiet
+from rich.markdown import Markdown
+import rich.terminal_theme
 from colorama import just_fix_windows_console
+
+from implementation import configuration
+from implementation.configuration import Configuration
+from implementation.logger import print_translated, set_quiet, translate
+
+from .custom_rich_argparse_formatters import RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter
+
+
+class Dummy:
+    def __init__(self, obj) -> None:
+        self._obj = obj
+
+    def __repr__(self):
+        if self._obj=='':
+            return '""'
+        return repr(self._obj)
+
+    def __str__(self):
+        if self._obj=='':
+            return '""'
+        return str(self._obj)
+
+
+DESCRIPTION = """
+Merges given PDFs, images and office document formats into a single PDF file.
+
+The program accepts both file and folders (which are recursively scanned for supported files.)
+
+Most of the parameters can be loaded from a configuration file.\
+    
+A configuration file with default values is automatically created if it does not exists.\
+    
+Its path is `config.toml`.
+
+Flag options have their negative variant to override parameters loaded from the configuration file.\
+
+(With the default configuration file they are not needed)
+
+Default values shown in help are not loaded from any configuration file.
+"""
+
+EPILOG = """
+To use the program by *drag&dropping* files and folders onto it, enable the *config_dragdrop.toml* which should be provided.
+
+To enable change it name to *config.toml*, or add `--config config_dragdrop.toml` as an arguments to the shortcut or script you want to drop file onto.
+"""
+
 
 def wait_for_confirm(wait: bool):
     if wait:
         try:
-            input("\n" + str(log("ConfirmExit")))
+            input("\n" + str(translate("ConfirmExit")))
         except KeyboardInterrupt:  # CTRL-C should gracefully exit now
             pass
 
@@ -26,7 +74,7 @@ def load_config(cmd_args, default_config_path):
     config_path = cmd_args.config or default_config_path
     config = Configuration()
     if not Path(config_path).exists():
-        printlog("ConfigNotFound", config_path)
+        print_translated("ConfigNotFound", config_path)
         sys.exit()
     config.update_from_toml(config_path)
     config.update_from_dictlike(vars(cmd_args))
@@ -36,18 +84,42 @@ def load_config(cmd_args, default_config_path):
 
 def parse_arguments(help_override: bool = False):
     just_fix_windows_console()
-    rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "magenta"
-    rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "bold italic"
-    rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "dark_orange bold"
+    # "argparse.args": "cyan", for positional-arguments and --options (e.g "--help")
+    # "argparse.groups": "dark_orange", for group names (e.g. "positional arguments")
+    # "argparse.help": "default", for argument's help text (e.g. "show this help message and exit")
+    # "argparse.metavar": "dark_cyan", for meta variables (e.g. "FILE" in "--file FILE")
+    # "argparse.syntax": "bold", for %(prog)s in the usage (e.g. "foo" in "Usage: foo [options]")
+    # "argparse.text": "default", for highlights of back-tick quoted text (e.g. "``` `some text` ```")
+    # "argparse.prog": "grey50", for the descriptions and epilog (e.g. "A foo program")
+    # "argparse.default": "italic",  for %(default)s in the help (e.g. "Value" in "(default: Value)")
+    rich_argparse.RichHelpFormatter.styles["argparse.metavar"] = "spring_green1 italic"
+    rich_argparse.RichHelpFormatter.styles["argparse.args"] = "deep_sky_blue1 bold"
+    rich_argparse.RichHelpFormatter.styles["argparse.prog"] = "bold italic orange_red1"
+    rich_argparse.RichHelpFormatter.styles["argparse.groups"] = "orange3 bold"
+    rich_argparse.RichHelpFormatter.styles["argparse.syntax"] = "red"
+    rich_argparse.RichHelpFormatter.styles["argparse.default"] = "italic dim"
+    rich_argparse.RichHelpFormatter.styles["argparse.help"] = "default"
+    dummy_config = Configuration()
+    epilog: Any = Markdown(inspect.cleandoc(EPILOG))
+    description: Any = Markdown(inspect.cleandoc(DESCRIPTION))
     parser = argparse.ArgumentParser(
-        formatter_class=(lambda prog: RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(prog, max_help_position=8)),
+        formatter_class=(
+            lambda prog: RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(prog, max_help_position=8)
+        ),
         add_help=False,
         prefix_chars="-/",
         # formatter_class=argparse.RawTextHelpFormatter,
         # formatter_class=argparse_formatter.ParagraphFormatter,
         # prog=Path(__file__).name,
-        description="Merges given PDFs, images and office document formats into a single PDF file.",
+        description=description,
+        epilog=epilog,
     )
+    parser.add_argument(
+    "--generate-help-preview",
+    action=rich_argparse.HelpPreviewAction,
+    path="help-preview.svg",  # (optional) or "help-preview.html" or "help-preview.txt"
+    export_kwds={"theme": rich.terminal_theme.MONOKAI},  # (optional) keywords passed to console.save_... methods
+)
     parser.add_argument(
         "-h",
         "-?",
@@ -63,7 +135,7 @@ def parse_arguments(help_override: bool = False):
         # type=get_files_single,
         help=(
             "Directories and files to be processed.\n"
-            "Directories will be searched recursively looking for images, pdfs and office document formats. "
+            "Directories will be searched recursively looking for images, pdfs and office document formats.\n"
             "Relative paths are based in the current working directory."
         ),
     )
@@ -73,19 +145,38 @@ def parse_arguments(help_override: bool = False):
         metavar="NEW_CONFIG_PATH",
         action="store",
         type=str,
-        help="If a path is provided, all input parameters are saved as a config file, under the given path.",
+        default=Dummy(False),
+        help="If a path is provided, all input parameters are saved as a config file, under the given path.\n"
+        "Input parameters are a union of commandline parameters as well as the loaded configuration file's parameters.",
+    )
+    parser.add_argument(
+        "--confirm-exit",
+        default=Dummy(dummy_config.confirm_exit),
+        action=argparse.BooleanOptionalAction,
+        help=configuration.CONFIRM_EXIT_DESCRIPTION,
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        default=Dummy(dummy_config.quiet),
+        action=argparse.BooleanOptionalAction,
+        help=configuration.QUIET_DESCRIPTION,
     )
     parser.add_argument(
         "-whatif",
+        "--what-if",
         "--whatif",
         action="store_true",
-        help="If present, runs the program, but outputs no files. Overrides --quiet",
+        default=Dummy(dummy_config.whatif),
+        help="If present, runs the program, but outputs no files. Overrides --quiet.",
     )
     parser.add_argument(
         "-l",
         "--language",
         action="store",
-        help=configuration.LANGUAGE_DESCRIPTION
+        metavar="LANG",
+        help=configuration.LANGUAGE_DESCRIPTION,
+        default=Dummy(dummy_config.language),
     )
     # PARAMETERS
     parameters_args = parser.add_argument_group("Input parameters")
@@ -100,7 +191,7 @@ def parse_arguments(help_override: bool = False):
         action="store",
         metavar="PATH_TO_CONFIG",
         help=(
-            "Custom path to a configuration file. Will be used in place of the default configuration file.\n\n"
+            "Custom path to a configuration file. Will be used in place of the default configuration file.\n"
             "Some parameters cannot be saved (e.g. files or output_file)."
         ),
     )
@@ -109,41 +200,41 @@ def parse_arguments(help_override: bool = False):
         action="store",
         type=int,
         help=configuration.RECURSION_DESCRIPTION,
+        default=Dummy(dummy_config.recursion_limit),
     )
     parameters_args.add_argument(
         "-p",
         "--image-page-fallback-size",
         action="store",
         metavar="PAGE_SIZE",
+        default=Dummy(dummy_config._image_page_fallback_size),
         help=configuration.IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
     )
-    parameters_args.add_argument("-m", "--margin", action="store", help=configuration.MARGIN_DESCRIPTION)
+    parameters_args.add_argument(
+        "-m",
+        "--margin",
+        action="store",
+        help=configuration.MARGIN_DESCRIPTION,
+        default=Dummy(dummy_config._margin),
+    )
     parameters_args.add_argument(
         "--fp",
         "--force-image-page-fallback-size",
         action=argparse.BooleanOptionalAction,
+        default=Dummy(dummy_config.force_image_page_fallback_size),
         help=configuration.FORCE_IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION,
     )
     parameters_args.add_argument(
         "--afs",
         "--alphabetic-file-sorting",
+        default=Dummy(dummy_config.alphabetic_file_sorting),
         action=argparse.BooleanOptionalAction,
         help=configuration.ALPHABETIC_FILE_SORTING_DESCRIPTION,
     )
     parameters_args.add_argument(
-        "--confirm-exit",
-        action=argparse.BooleanOptionalAction,
-        help=configuration.CONFIRM_EXIT_DESCRIPTION,
-    )
-    parameters_args.add_argument(
-        "-q",
-        "--quiet",
-        action=argparse.BooleanOptionalAction,
-        help=configuration.QUIET_DESCRIPTION,
-    )
-    parameters_args.add_argument(
         "--libreoffice-path",
         nargs="*",
+        default=Dummy(dummy_config._libreoffice_path),
         help=configuration.LIBREOFFICE_PATH_DESCRIPTION,
     )
     # OUTPUT ARGS
@@ -159,18 +250,24 @@ def parse_arguments(help_override: bool = False):
         "-od",
         "--output-directory",
         action="store",
+        default=Dummy(dummy_config.output_directory),
         help="Path of the directory where the output file will be placed. "
-        'Filename will be generated based on time and language. Default: "."',
+        'Filename will be generated based on time and language.\n'
+        'This path will always be treated as a folder path, even if you provide an extension.',
     )
     exclusive_output.add_argument(
         "-o",
         "-of",
         "--output-file",
         action="store",
-        help="Path of the output file. Relative to the current working directory. "
+        help="Path of the output file. Relative to the current working directory.\n"
+        'This path will always be treated as a file path, even if you do not provide an extension.\n'
         'Extension will be changed to ".pdf/.png" as needed.',
     )
     args = parser.parse_args()
+    for k, v in vars(args).items():
+        if isinstance(v, Dummy):
+            setattr(args, k, None)
     if args.whatif:
         args.quiet = False
     if not args.files or help_override:

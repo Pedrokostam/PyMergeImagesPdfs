@@ -1,10 +1,13 @@
+from os import get_terminal_size
 from pathlib import Path
+from typing import Any
 import json
 
 import tqdm
 
-_QUIET: bool = False
-_WRITER: tqdm.tqdm | None = None
+__QUIET: bool = False
+__WRITER: tqdm.tqdm | None = None
+
 
 _ENGLISH_LOCALIZATION: dict[str, str] = {
     "FilesToProcess": """
@@ -15,7 +18,8 @@ _ENGLISH_LOCALIZATION: dict[str, str] = {
     "OutputSaved": "Saved in '{0}'.",
     "UnknownFileType": "Unknown file type {0}.",
     "MergedFile": "Merged: '{0}'.",
-    "Merging": "Merging... ({0} pages)",
+    "Merging": "Merging... (page count: {0})",
+    "MergingFinished": "Merged (page count: {0}).",
     "EnumeratingInput": "Enumerating files...",
     "FirstPageSize": "First PDF page size: {0}.",
     "GeneratedDefaultConfig": "Generated default configration file.",
@@ -33,22 +37,22 @@ CURRENT_LOCALIZATION: dict[str, str] = _ENGLISH_LOCALIZATION
 
 def set_writer(writer: tqdm.tqdm | None):
     # pylint: disable=global-statement
-    global _WRITER
-    _WRITER = writer
+    global __WRITER
+    __WRITER = writer
 
 
 def get_writer():
-    return _WRITER
+    return __WRITER
 
 
 def set_quiet(is_quiet: bool):
     # pylint: disable=global-statement
-    global _QUIET
-    _QUIET = bool(is_quiet)
+    global __QUIET
+    __QUIET = bool(is_quiet)
 
 
 def get_quiet():
-    return _QUIET
+    return __QUIET
 
 
 def set_language_from_file(path: Path, identifier: str | None):
@@ -63,30 +67,63 @@ def set_language_from_file(path: Path, identifier: str | None):
                 return
 
 
-def log(msg_key: str, *args, **kwargs):
-    if _QUIET:
-        return None
-    message = CURRENT_LOCALIZATION.get(msg_key, _ENGLISH_LOCALIZATION[msg_key])
+def translate(msg_key: str, *args, **kwargs):
+    """Finds the message in current localization by msk_key and returns it, formatted with given args and kwargs.
+
+    If the message is not in the localization, or has too many placeholders
+    returns the message from the default localization.
+
+    If that is missing as well, raise a KeyError.
+
+    Args:
+        msg_key (str): Key of the message in the localization file.
+
+    Returns:
+        _type_: Formatted localized string
+    """
+    default_value = _ENGLISH_LOCALIZATION[msg_key]
+    message = CURRENT_LOCALIZATION.get(msg_key, default_value)
     try:
         return message.format(*args, **kwargs)
     except (IndexError, KeyError):
-        return _ENGLISH_LOCALIZATION[msg_key].format(*args, **kwargs)
+        return default_value.format(*args, **kwargs)
 
 
-def _print(s):
-    if _QUIET:
+def print_message(s: Any, overprint: bool = False):
+    """
+    Prints the given message.
+
+    If --quiet is True, does nothing.
+
+    If a progress bar is active, redirects the message to bar.write().
+
+    Args:
+        s (Any): Objects, whose result of __str__ will be printed.
+    """
+    if __QUIET:
         return
-    if _WRITER:
-        _WRITER.write(str(s))
+    msg = str(s)
+    end = "\n"
+    if overprint:
+        to_fill = get_terminal_size().columns - len(msg)
+        msg += " " * (to_fill-1)
+        end = "\r"
+    if __WRITER:
+        __WRITER.write(msg, end=end)
     else:
-        print(s)
+        print(msg, end=end)
 
 
-def printline():
-    _print("")
+def print_newline():
+    """
+    Call print_message with an empty string, resulting in an empty line being printed.
+
+    If --quiet is True, does nothing.
+    """
+    print_message("")
 
 
-def printlog(msg_key: str, *args, **kwargs):
-    log_or_not = log(msg_key, *args, **kwargs)
-    if log_or_not:
-        _print(log_or_not)
+def print_translated(msg_key: str, *args, overprint: bool = False, **kwargs):
+    log = translate(msg_key, *args, **kwargs)
+    if log:
+        print_message(log, overprint=overprint)

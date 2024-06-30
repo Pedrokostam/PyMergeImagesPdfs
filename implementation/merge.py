@@ -2,11 +2,14 @@ import subprocess
 import tempfile
 import os
 from pathlib import Path
+from time import sleep
 from typing import Sequence
 import pymupdf
 from tqdm import tqdm
+
+from .progress_reporting import close_progress_bar, create_progress_bar
 from .configuration import Configuration
-from .logger import printline, printlog, log, set_writer
+from .logger import get_quiet, print_newline, print_translated, translate, set_writer
 from .dimension import Dimension
 from .files import is_image_extension, is_pdf_extension, is_document_extension
 
@@ -16,7 +19,7 @@ PathLike = str | Path
 # .\soffice.exe --convert-to pdf 'PATH' --outdir 'DIR'
 def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupdf.Document, dry_run: bool):
     if not config.libreoffice_path:
-        printlog("LibreMissing", document_path)
+        print_translated("LibreMissing", document_path)
         return
     if dry_run:
         return
@@ -31,7 +34,7 @@ def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupd
 
 
 def merge_documents(files: Sequence[PathLike], output_path: Path, config: Configuration):
-    printline()
+    print_newline()
     all_filepaths = [Path(x) for x in files]
     pdf_filepaths = [x for x in all_filepaths if is_pdf_extension(x)]
     output_file = pymupdf.Document()
@@ -40,11 +43,11 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         first_doc = pymupdf.open(pdf_filepaths[0])
         actual_pagesize = first_doc.load_page(0).rect
         dim = Dimension(actual_pagesize.width, actual_pagesize.height, "pt")
-        printlog("FirstPageSize", dim)
-        printline()
-    bar = tqdm(all_filepaths, desc=log("Merging", 0))
-    set_writer(bar)
-    for file in bar:
+        print_translated("FirstPageSize", dim)
+        print_newline()
+    progress_bar = create_progress_bar(all_filepaths, desc=translate("Merging", 0))
+    for file in progress_bar:
+        progress_bar.set_description(translate("Merging", output_file.page_count))
         if is_pdf_extension(file):
             output_file.insert_file(file)
         elif is_image_extension(file):
@@ -52,16 +55,17 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         elif is_document_extension(file):
             libre_to_pdf(file, config, output_file, dry_run=config.whatif)
         else:
-            printlog("UnknownFileType", file)
-        bar.set_description(log("Merging", output_file.page_count))
-        printlog("MergedFile", file)
-    bar.close()
-    set_writer(None)
+            print_translated("UnknownFileType", file)
+        print_translated("MergedFile", file)
+        if config.whatif:
+            sleep(0.05)
+    close_progress_bar()
+    print_translated("MergingFinished", output_file.page_count)
     output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
     if not config.whatif:
         output_file.save(output_path)  # save can handle pathlib.Path
-    printline()
-    printlog("OutputSaved", output_path.absolute())
+    print_newline()
+    print_translated("OutputSaved", output_path.absolute())
 
 
 def image_to_pdf(file, config, output_file, actual_pagesize):
