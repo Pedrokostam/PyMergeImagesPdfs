@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+.r1 {color: #d78700; text-decoration-color: #d78700; font-weight: bold}
+.r2 {color: #ff5f00; text-decoration-color: #ff5f00; font-weight: bold; font-style: italic}
+.r3 {color: #00afff; text-decoration-color: #00afff; font-weight: bold}
+.r4 {color: #00ff87; text-decoration-color: #00ff87; font-style: italic}
+.r5 {color: #58d1eb; text-decoration-color: #58d1eb; background-color: #1a1a1a; font-weight: bold}
+.r6 {color: #d9d9d9; text-decoration-color: #d9d9d9}
+.r7 {color: #727272; text-decoration-color: #727272; font-style: italic}
+.r8 {font-style: italic}
+body {
+    color: #d9d9d9;
+    background-color: #0c0c0c;
+}
+</style>
+</head>
+<body>
+    <pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code style="font-family:inherit"><span class="r1">Usage:</span> <span class="r2">merge_documents.py</span> [<span class="r3">-h</span>] [<span class="r3">-s</span> <span class="r4">NEW_CONFIG_PATH</span>] [<span class="r3">--confirm-exit</span> | <span class="r3">--no-confirm-exit</span>] [<span class="r3">-q</span> | <span class="r3">--quiet</span> | <span class="r3">--no-quiet</span>] [<span class="r3">-whatif</span>] [<span class="r3">-l</span> <span class="r4">LANG</span>] [<span class="r3">-c</span> <span class="r4">PATH_TO_CONFIG</span>]
+                          [<span class="r3">--recursion-limit</span> <span class="r4">RECURSION_LIMIT</span>] [<span class="r3">-p</span> <span class="r4">PAGE_SIZE</span>] [<span class="r3">-m</span> <span class="r4">MARGIN</span>] [<span class="r3">--fp</span> | <span class="r3">--no-fp</span> | <span class="r3">--force-image-page-fallback-size</span> | <span class="r3">--no-force-image-page-fallback-size</span>]
+                          [<span class="r3">--afs</span> | <span class="r3">--no-afs</span> | <span class="r3">--alphabetic-file-sorting</span> | <span class="r3">--no-alphabetic-file-sorting</span>] [<span class="r3">--libreoffice-path</span> <span class="r4">[LIBREOFFICE_PATH ...]</span>]
+                          [<span class="r3">-od</span> <span class="r4">OUTPUT_DIRECTORY</span> | <span class="r3">-o</span> <span class="r4">OUTPUT_FILE</span>]
+                          [<span class="r3">files</span> ...]
+
+Merges given PDFs, images and office document formats into a single PDF file.
+
+The program accepts both file and folders (which are recursively scanned for supported files.)
+
+Most of the parameters can be loaded from a configuration file.
+A configuration file with default values is automatically created if it does not exists.
+Its path is <span class="r5">config.toml</span>.
+
+Flag options have their negative variant to override parameters loaded from the configuration file. (With the default configuration file they are not needed)
+
+Default values shown in help are not loaded from any configuration file.
+
+<span class="r1">Positional Arguments:</span>
+  <span class="r3">files</span>
+        <span class="r6">Directories and files to be processed.</span>
+        <span class="r6">Directories will be searched recursively looking for images, pdfs and office document formats.</span>
+        <span class="r6">Relative paths are based in the current working directory.</span>
+        <span class="r6">(default: </span><span class="r7">None</span><span class="r6">)</span>
+
+<span class="r1">Options:</span>
+  <span class="r3">-h</span>, <span class="r3">-?</span>, <span class="r3">--help</span>, <span class="r3">/?</span>
+        <span class="r6">Show this help message and exit.</span>
+  <span class="r3">-s</span>, <span class="r3">--save-config</span> <span class="r4">NEW_CONFIG_PATH</span>
+        <span class="r6">If a path is provided, all input parameters are saved as a config file, under the given path.</span>
+        <span class="r6">Input parameters are a union of commandline parameters as well as the loaded configuration file&#x27;s parameters.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">--confirm-exit</span>, <span class="r3">--no-confirm-exit</span>
+        <span class="r6">If True, will not exit the program until user confirms.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">-q</span>, <span class="r3">--quiet</span>, <span class="r3">--no-quiet</span>
+        <span class="r6">If True, prints no messages to the console. Overrides </span><span class="r3">--confirm-exit</span><span class="r6">.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">-whatif</span>, <span class="r3">--what-if</span>, <span class="r3">--whatif</span>
+        <span class="r6">If present, runs the program, but outputs no files. Overrides </span><span class="r3">--quiet</span><span class="r6">.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">-l</span>, <span class="r3">--language</span> <span class="r4">LANG</span>
+        <span class="r6">Which language file to load. Language files should follow the &#x27;language.{LANG}.json&#x27; pattern where &#x27;LANG&#x27; is an identifier for the language.</span>
+        <span class="r6">This argument accepts this identifier.</span>
+        <span class="r6">If the identifier is an empty string, first available file is loaded.</span>
+        <span class="r6">If the matching file is not found, default language will be used.</span>
+        <span class="r6">(default: </span><span class="r7">&quot;&quot;</span><span class="r6">)</span>
+
+<span class="r1">Input Parameters:</span>
+  <span class="r6">All parameters in this group can be stored in a configuration file. When running the application first the configuration file is read, then it is updated with commandline parameters.</span>
+
+  <span class="r3">-c</span>, <span class="r3">--config</span> <span class="r4">PATH_TO_CONFIG</span>
+        <span class="r6">Custom path to a configuration file. Will be used in place of the default configuration file.</span>
+        <span class="r6">Some parameters cannot be saved (e.g. files or output_file).</span>
+        <span class="r6">(default: </span><span class="r7">None</span><span class="r6">)</span>
+  <span class="r3">--recursion-limit</span> <span class="r4">RECURSION_LIMIT</span>
+        <span class="r6">How deep to search for supported files in a directory.</span>
+        <span class="r6">(default: </span><span class="r7">5</span><span class="r6">)</span>
+  <span class="r3">-p</span>, <span class="r3">--image-page-fallback-size</span> <span class="r4">PAGE_SIZE</span>
+        <span class="r6">When adding images, the page size is set to first PDF&#x27;s first page size.</span>
+        <span class="r6">If there are no PDF files provided, the fallback value is used.</span>
+        <span class="r6">Format: &quot;(width)(unit) x (height)(unit)&quot;. Units have to match.</span>
+        <span class="r6">You can use points (pt), millimetres (m), centimetres (cm) and inches (inch) as units. Default unit is point.</span>
+        <span class="r6">Can also specify common paper sizes, like &#x27;A4&#x27;.</span>
+        <span class="r6">(default: </span><span class="r7">A4</span><span class="r6">)</span>
+  <span class="r3">-m</span>, <span class="r3">--margin</span> <span class="r4">MARGIN</span>
+        <span class="r6">Margin to be used when adding images.</span>
+        <span class="r6">Format: &quot;(width)(unit) x (height)(unit)&quot;. Units have to match.</span>
+        <span class="r6">You can use points (pt), millimetres (m), centimetres (cm) and inches (inch) as units. Default unit is point.</span>
+        <span class="r6">(default: </span><span class="r7">0mm x 0mm</span><span class="r6">)</span>
+  <span class="r3">--fp</span>, <span class="r3">--no-fp</span>, <span class="r3">--force-image-page-fallback-size</span>, <span class="r3">--no-force-image-page-fallback-size</span>
+        <span class="r6">If True, the specified fallback size will always be used for image pages, regardless of other PDF files.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">--afs</span>, <span class="r3">--no-afs</span>, <span class="r3">--alphabetic-file-sorting</span>, <span class="r3">--no-alphabetic-file-sorting</span>
+        <span class="r6">When true the order in which the paths are specified is ignored - all paths are sorted alphabetically as if they were in one directory.</span>
+        <span class="r6">Useful when using the program by dragging the files onto the executable.</span>
+        <span class="r6">(default: </span><span class="r7">False</span><span class="r6">)</span>
+  <span class="r3">--libreoffice-path</span> <span class="r4">[LIBREOFFICE_PATH ...]</span>
+        <span class="r6">Path to Libre Office executable.</span>
+        <span class="r6">First available path will be used.</span>
+        <span class="r6">If no path is valid conversion of document formats is disabled.</span>
+        <span class="r6">Paths may contain &#x27;~&#x27; and environmental variables (surrounded with &#x27;%&#x27; or prepended with &#x27;$&#x27;).</span>
+        <span class="r6">You can use both forward and backward slashes. Backward slashes need to be doubled.</span>
+        <span class="r6">Can be relative (to the current working directory).</span>
+        <span class="r6">(default: </span><span class="r7">[&#x27;%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe&#x27;, &#x27;%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe&#x27;]</span><span class="r6">)</span>
+
+<span class="r1">Output:</span>
+  <span class="r6">You can specify either output filepath or output directory. When the directory path is provided the output filename will be generated based on the current date.</span>
+
+  <span class="r3">-od</span>, <span class="r3">--output-directory</span> <span class="r4">OUTPUT_DIRECTORY</span>
+        <span class="r6">Path of the directory where the output file will be placed. Filename will be generated based on time and language.</span>
+        <span class="r6">This path will always be treated as a folder path, even if you provide an extension.</span>
+        <span class="r6">(default: </span><span class="r7">.</span><span class="r6">)</span>
+  <span class="r3">-o</span>, <span class="r3">-of</span>, <span class="r3">--output-file</span> <span class="r4">OUTPUT_FILE</span>
+        <span class="r6">Path of the output file. Relative to the current working directory.</span>
+        <span class="r6">This path will always be treated as a file path, even if you do not provide an extension.</span>
+        <span class="r6">Extension will be changed to &quot;.pdf/.png&quot; as needed.</span>
+        <span class="r6">(default: </span><span class="r7">None</span><span class="r6">)</span>
+
+To use the program by <span class="r8">drag&amp;dropping</span> files and folders onto it, enable the <span class="r8">config_dragdrop.toml</span> which should be provided.
+
+To enable change it name to <span class="r8">config.toml</span>, or add <span class="r5">--config config_dragdrop.toml</span> as an arguments to the shortcut or script you want to drop file onto.
+</code></pre>
+</body>
+</html>

@@ -5,7 +5,7 @@ from rich.text import Text
 from rich.containers import Lines
 
 
-def split_formatted_text(text: Text, width: int):
+def split_formatted_text(text: Text, width: int) -> list[int]:
     plain_text = text.plain
     last_whitespace_index = -1
     current_width = 0
@@ -54,7 +54,7 @@ whitespace_checker = re.compile(r"\n\s*$")
 """Checks if the string ends with a newline followed by optional whitespaces."""
 
 
-class RawDescriptionPreservedHelpRichHelpFormatter(rich_argparse.RawTextRichHelpFormatter):
+class RawTextIndentRichHelpFormatter(rich_argparse.RawTextRichHelpFormatter):
     """Rich help message formatter which retains any formatting in descriptions.
     In argument help, it preserves new lines and still wrap the text to the available width, with proper indentation.
     """
@@ -70,12 +70,12 @@ class RawDescriptionPreservedHelpRichHelpFormatter(rich_argparse.RawTextRichHelp
         return splitted
 
 
-class RawDescriptionNewLineDefaultRichHelpFormatter(rich_argparse.RawTextRichHelpFormatter):
+class RawDescriptionArgumentsDefaultRichHelpFormatter(rich_argparse.RawTextRichHelpFormatter):
     """Rich help message formatter which retains any formatting in descriptions.
     Prints default values for arguments on a new line after the help message.
     """
 
-    def _get_help_string(self, action):
+    def _get_help_string(self, action) -> str:
         """
         Add the default value to the option help message.
 
@@ -99,8 +99,8 @@ class RawDescriptionNewLineDefaultRichHelpFormatter(rich_argparse.RawTextRichHel
         return help_str
 
 
-class RawDescriptionPreservedHelpNewLineDefaultRichHelpFormatter(
-    RawDescriptionPreservedHelpRichHelpFormatter, RawDescriptionNewLineDefaultRichHelpFormatter
+class RawTextIndentArgumentsDefaultRichHelpFormatter(
+    RawTextIndentRichHelpFormatter, RawDescriptionArgumentsDefaultRichHelpFormatter
 ):
     """Rich help message formatter which retains any formatting in descriptions.
     In argument help, it preserves new lines and still wrap the text to the available width, with proper indentation.

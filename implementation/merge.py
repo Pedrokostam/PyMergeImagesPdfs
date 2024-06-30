@@ -52,16 +52,14 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         elif is_image_extension(file):
             image_to_pdf(file, config, output_file, actual_pagesize)
         elif is_document_extension(file):
-            libre_to_pdf(file, config, output_file, dry_run=config.whatif)
+            libre_to_pdf(file, config, output_file, dry_run=config.what_if)
         else:
             print_translated("UnknownFileType", file)
         print_translated("MergedFile", file)
-        if config.whatif:
-            sleep(0.05)
     close_progress_bar()
     print_translated("MergingFinished", output_file.page_count)
     output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
-    if not config.whatif:
+    if not config.what_if:
         output_file.save(output_path)  # save can handle pathlib.Path
     print_newline()
     print_translated("OutputSaved", output_path.absolute())
