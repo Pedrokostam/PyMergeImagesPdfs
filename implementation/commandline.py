@@ -60,7 +60,7 @@ Default values shown in help are not loaded from any configuration file.
 """
 
 EPILOG = """
-To use the program by *drag&dropping* files and folders onto it, enable the config_dragdrop.toml which should be provided.
+To use the program by drag&dropping files and folders onto it, enable the config_dragdrop.toml which should be provided.
 
 To enable change it name to config.toml, or add --config config_dragdrop.toml as an arguments to the shortcut or script you want to drop file onto.
 """
