@@ -1,5 +1,6 @@
 import argparse
 import inspect
+from inspect import cleandoc as cd
 import sys
 from pathlib import Path
 from typing import Any
@@ -111,7 +112,9 @@ def parse_arguments(help_override: bool = False):
     rich_argparse.RichHelpFormatter.styles["argparse.default"] = "italic dim"
     rich_argparse.RichHelpFormatter.styles["argparse.help"] = "default"
     rich_argparse.RichHelpFormatter.styles["argparse.toml"] = "bold slate_blue1"
+    rich_argparse.RichHelpFormatter.styles["argparse.symbol"] = "bold spring_green3"
     rich_argparse.RichHelpFormatter.highlights.append(r"(?i)\b(?P<toml>(\w+\.)?toml)\b")
+    rich_argparse.RichHelpFormatter.highlights.append(r"(?P<symbol>[\$\%])")
     dummy_config = Configuration()
     epilog: Any = inspect.cleandoc(EPILOG)
     description: Any = inspect.cleandoc(DESCRIPTION)
@@ -144,10 +147,10 @@ def parse_arguments(help_override: bool = False):
         "files",
         nargs="*",
         # type=get_files_single,
-        help=(
-            "Directories and files to be processed.\n"
-            "Directories will be searched recursively looking for images, pdfs and office document formats.\n"
-            "Relative paths are based in the current working directory."
+        help=cd(
+            """Directories and files to be processed.
+            Directories will be searched recursively looking for images, pdfs and office document formats.
+            Relative paths are based in the current working directory."""
         ),
     )
     parser.add_argument(
@@ -156,10 +159,12 @@ def parse_arguments(help_override: bool = False):
         metavar="FILEPATH or -",
         action="store",
         type=str,
-        help="If a path is provided, all input parameters are saved as a TOML configuration file, under the given path.\n"
-        "Input parameters are a union of commandline parameters as well as the loaded configuration file's parameters.\n"
-        "To send the TOML text to standard output, specify '-' as the destination.\n"
-        "After saving the condfiguration the program exits.",
+        help=cd(
+            """If a path is provided, all input parameters are saved as a TOML configuration file, under the given path.
+        Input parameters are a union of commandline parameters as well as the loaded configuration file's parameters.
+        To send the TOML text to standard output, specify '-' as the destination.
+        After saving the condfiguration the program exits."""
+        ),
     )
     parser.add_argument(
         "--confirm-exit",
@@ -192,19 +197,19 @@ def parse_arguments(help_override: bool = False):
     )
     # PARAMETERS
     parameters_args = parser.add_argument_group("Input parameters")
-    parameters_args.description = (
-        "All parameters in this group can be stored in a configuration file. "
-        "When running the application first the configuration file is read, "
-        "then it is updated with commandline parameters."
+    parameters_args.description = cd(
+        """All parameters in this group can be stored in a configuration file. 
+        When running the application first the configuration file is read, 
+        then it is updated with commandline parameters."""
     )
     parameters_args.add_argument(
         "-c",
         "--config",
         action="store",
         metavar="PATH_TO_CONFIG",
-        help=(
-            "Custom path to a configuration file. Will be used in place of the default configuration file.\n"
-            "Some parameters cannot be saved (e.g. files or output_file)."
+        help=cd(
+            """Custom path to a configuration file. Will be used in place of the default configuration file.
+            Some parameters cannot be saved (e.g. files or output_file)."""
         ),
     )
     parameters_args.add_argument(
@@ -256,9 +261,9 @@ def parse_arguments(help_override: bool = False):
     output_args = parser.add_argument_group(
         "Output",
     )
-    output_args.description = (
-        "You can specify either output filepath or output directory. "
-        "When the directory path is provided the output filename will be generated based on the current date."
+    output_args.description = cd(
+        """You can specify either output filepath or output directory. 
+        When the directory path is provided the output filename will be generated based on the current date."""
     )
     exclusive_output = output_args.add_mutually_exclusive_group()
     exclusive_output.add_argument(
@@ -266,9 +271,9 @@ def parse_arguments(help_override: bool = False):
         "--output-directory",
         action="store",
         default=Dummy(dummy_config.output_directory),
-        help="Path of the directory where the output file will be placed. "
-        "Filename will be generated based on time and language.\n"
-        "This path will always be treated as a folder path, even if you provide an extension.",
+        help=cd("""Path of the directory where the output file will be placed.
+        Filename will be generated based on time and language.
+        This path will always be treated as a folder path, even if you provide an extension.""")
     )
     exclusive_output.add_argument(
         "-o",
@@ -276,9 +281,9 @@ def parse_arguments(help_override: bool = False):
         "--output-file",
         metavar="OUTPUT_FILEPATH",
         action="store",
-        help="Path of the output file. Relative to the current working directory.\n"
-        "This path will always be treated as a file path, even if you do not provide an extension.\n"
-        'Extension will be changed to ".pdf/.png" as needed.',
+        help=cd("""Path of the output file. Relative to the current working directory.
+        This path will always be treated as a file path, even if you do not provide an extension.
+        Extension will be changed to ".pdf/.png" as needed.""")
     )
     args = parser.parse_args()
     Dummy.nullify_dummies(args)

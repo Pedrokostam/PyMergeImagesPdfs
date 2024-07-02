@@ -21,6 +21,7 @@ def libre_to_pdf(document_path: Path, config: Configuration, output_file: pymupd
         print_translated("LibreMissing", document_path)
         return
     if dry_run:
+        sleep(0.5)
         return
     tempdir = Path(tempfile.gettempdir()).joinpath("Zszywacz")
     os.makedirs(tempdir, exist_ok=True)
@@ -44,9 +45,9 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
         dim = Dimension(actual_pagesize.width, actual_pagesize.height, "pt")
         print_translated("FirstPageSize", dim)
         print_newline()
-    progress_bar = create_progress_bar(all_filepaths, desc=translate("Merging", 0))
-    for file in progress_bar:
-        progress_bar.set_description(translate("Merging", output_file.page_count))
+    # progress_bar = create_progress_bar(all_filepaths, desc=translate("Merging", 0))
+    for file in all_filepaths:
+        # progress_bar.set_description(translate("Merging", output_file.page_count))
         if is_pdf_extension(file):
             output_file.insert_file(file)
         elif is_image_extension(file):

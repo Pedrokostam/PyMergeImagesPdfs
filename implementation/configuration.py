@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 import os
 from pathlib import Path
+import re
 import sys
 from typing import Sequence
-from tomlkit import TOMLDocument, comment, document, nl, item, dump, load, register_encoder
+from tomlkit import TOMLDocument, comment, document, dumps, nl, item, load, register_encoder
 import pymupdf
 from .logger import print_translated
 from .dimension import Dimension
@@ -19,7 +20,8 @@ class InvalidDimensionError(ValueError):
 
 PATH_DISCLAIMER = [
     "Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').",
-    "You can use both forward and backward slashes. Backward slashes need to be doubled.",
+    "Double quoted strings allow escaping, so backslash has to be double.",
+    "To avoid that you can use single quoted string - single quotes make the string literal.",
     "Can be relative (to the current working directory).",
 ]
 
@@ -111,6 +113,7 @@ class Configuration:
         default_factory=lambda: [
             r"%PROGRAMFILES%\LibreOffice\program\soffice.exe",
             r"%PROGRAMFILES(X86)%\LibreOffice\program\soffice.exe",
+            "usr/bin/soffice",
         ]
     )
 
@@ -216,6 +219,15 @@ class Configuration:
 
     def save_config(self, destination: str | Path):
         doc = document()
+
+        def correct_quotes(doc: TOMLDocument):
+            def replacer(match: re.Match):
+                return "'" + match.group("value").replace("\\\\", "\\") + "'"
+
+            double_quote_finder = re.compile(r'"(?P<value>[^"]+\\\\[^"]+)"')
+            raw = dumps(doc)
+            return double_quote_finder.sub(replacer, raw)
+
         add_comment(doc, "Configuration file for stitcher")
 
         self.add_item(
@@ -236,11 +248,15 @@ class Configuration:
         self.add_item(doc, "confirm_exit", CONFIRM_EXIT_DESCRIPTION)
         self.add_item(doc, "quiet", QUIET_DESCRIPTION)
         self.add_item(doc, "recursion_limit", RECURSION_DESCRIPTION)
+        # tomlkit does not allow to specify how to quote string, it only uses double quotes
+        # I want to have windows paths in a literal string
+        # Using regex we correct double quoted string to single quoted
+        text = correct_quotes(doc)
         if destination == "-":
-            dump(doc, sys.stdout)
+            sys.stdout.write(text)
         else:
             with open(destination, "w", encoding="utf8") as fp:
-                dump(doc, fp)
+                fp.write(text)
         print_translated("ConfigSaved", destination)
 
     def update_from_toml(self, path: Path | str):
