@@ -10,6 +10,8 @@
 .r5 {color: #d9d9d9; text-decoration-color: #d9d9d9}
 .r6 {color: #875fff; text-decoration-color: #875fff; font-weight: bold}
 .r7 {color: #727272; text-decoration-color: #727272; font-style: italic}
+.r8 {color: #00d75f; text-decoration-color: #00d75f; font-weight: bold}
+.r9 {color: #067135; text-decoration-color: #067135; font-weight: bold; font-style: italic}
 body {
     color: #d9d9d9;
     background-color: #0c0c0c;
@@ -17,10 +19,9 @@ body {
 </style>
 </head>
 <body>
-    <pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code style="font-family:inherit"><span class="r1">Usage:</span> <span class="r2">merge_documents.py</span> [<span class="r3">-h</span>] [<span class="r3">-s</span> <span class="r4">FILEPATH or -</span>] [<span class="r3">--confirm-exit</span> | <span class="r3">--no-confirm-exit</span>] [<span class="r3">-q</span> | <span class="r3">--quiet</span> | <span class="r3">--no-quiet</span>] [<span class="r3">-whatif</span>] [<span class="r3">-l</span> <span class="r4">IDENTIFIER</span>] [<span class="r3">-c</span> <span class="r4">PATH_TO_CONFIG</span>]
-                          [<span class="r3">--recursion-limit</span> <span class="r4">RECURSION_LIMIT</span>] [<span class="r3">-p</span> <span class="r4">PAGE_SIZE</span>] [<span class="r3">-m</span> <span class="r4">MARGIN</span>] [<span class="r3">--fp</span> | <span class="r3">--no-fp</span> | <span class="r3">--force-image-page-fallback-size</span> | <span class="r3">--no-force-image-page-fallback-size</span>]
-                          [<span class="r3">--afs</span> | <span class="r3">--no-afs</span> | <span class="r3">--alphabetic-file-sorting</span> | <span class="r3">--no-alphabetic-file-sorting</span>] [<span class="r3">--libreoffice-path</span> <span class="r4">[LIBREOFFICE_PATH ...]</span>]
-                          [<span class="r3">-od</span> <span class="r4">OUTPUT_DIRECTORY</span> | <span class="r3">-o</span> <span class="r4">OUTPUT_FILEPATH</span>]
+    <pre style="font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><code style="font-family:inherit"><span class="r1">Usage:</span> <span class="r2">merge_documents.py</span> [<span class="r3">-h</span>] [<span class="r3">-s</span> <span class="r4">FILEPATH or -</span>] [<span class="r3">--confirm-exit</span> | <span class="r3">--no-confirm-exit</span>] [<span class="r3">-q</span> | <span class="r3">--quiet</span> | <span class="r3">--no-quiet</span>] [<span class="r3">-whatif</span>] [<span class="r3">-l</span> <span class="r4">IDENTIFIER</span>] [<span class="r3">-c</span> <span class="r4">PATH_TO_CONFIG</span>] [<span class="r3">--recursion-limit</span> <span class="r4">RECURSION_LIMIT</span>]
+                          [<span class="r3">-p</span> <span class="r4">PAGE_SIZE</span>] [<span class="r3">-m</span> <span class="r4">MARGIN</span>] [<span class="r3">--fp</span> | <span class="r3">--no-fp</span> | <span class="r3">--force-image-page-fallback-size</span> | <span class="r3">--no-force-image-page-fallback-size</span>]
+                          [<span class="r3">--afs</span> | <span class="r3">--no-afs</span> | <span class="r3">--alphabetic-file-sorting</span> | <span class="r3">--no-alphabetic-file-sorting</span>] [<span class="r3">--libreoffice-path</span> <span class="r4">[LIBREOFFICE_PATH ...]</span>] [<span class="r3">-od</span> <span class="r4">OUTPUT_DIRECTORY</span> | <span class="r3">-o</span> <span class="r4">OUTPUT_FILEPATH</span>]
                           [<span class="r3">files</span> ...]
 
 <span class="r5">Merges given PDFs, images and office document formats into a single PDF file.</span>
@@ -69,7 +70,9 @@ body {
         <span class="r5">(default: </span><span class="r7">&quot;&quot;</span><span class="r5">)</span>
 
 <span class="r1">Input Parameters:</span>
-  <span class="r5">All parameters in this group can be stored in a configuration file. When running the application first the configuration file is read, then it is updated with commandline parameters.</span>
+  <span class="r5">All parameters in this group can be stored in a configuration file.</span>
+  <span class="r5">When running the application first the configuration file is read,</span>
+  <span class="r5">then it is updated with commandline parameters.</span>
 
   <span class="r3">-c</span>, <span class="r3">--config</span> <span class="r4">PATH_TO_CONFIG</span>
         <span class="r5">Custom path to a configuration file. Will be used in place of the default configuration file.</span>
@@ -101,16 +104,19 @@ body {
         <span class="r5">Path to Libre Office executable.</span>
         <span class="r5">First available path will be used.</span>
         <span class="r5">If no path is valid conversion of document formats is disabled.</span>
-        <span class="r5">Paths may contain &#x27;~&#x27; and environmental variables (surrounded with &#x27;%&#x27; or prepended with &#x27;$&#x27;).</span>
-        <span class="r5">You can use both forward and backward slashes. Backward slashes need to be doubled.</span>
+        <span class="r5">Paths may contain &#x27;~&#x27; and environmental variables (surrounded with &#x27;</span><span class="r8">%</span><span class="r5">&#x27; or prepended with &#x27;</span><span class="r8">$</span><span class="r5">&#x27;).</span>
+        <span class="r5">Double quoted strings allow escaping, so backslash has to be double.</span>
+        <span class="r5">To avoid that you can use single quoted string - single quotes make the string literal.</span>
         <span class="r5">Can be relative (to the current working directory).</span>
-        <span class="r5">(default: </span><span class="r7">[&#x27;%PROGRAMFILES%\\LibreOffice\\program\\soffice.exe&#x27;, &#x27;%PROGRAMFILES(X86)%\\LibreOffice\\program\\soffice.exe&#x27;]</span><span class="r5">)</span>
+        <span class="r5">(default: </span><span class="r7">[&#x27;</span><span class="r9">%</span><span class="r7">PROGRAMFILES</span><span class="r9">%</span><span class="r7">\\LibreOffice\\program\\soffice.exe&#x27;, &#x27;</span><span class="r9">%</span><span class="r7">PROGRAMFILES(X86)</span><span class="r9">%</span><span class="r7">\\LibreOffice\\program\\soffice.exe&#x27;, &#x27;usr/bin/soffice&#x27;]</span><span class="r5">)</span>
 
 <span class="r1">Output:</span>
-  <span class="r5">You can specify either output filepath or output directory. When the directory path is provided the output filename will be generated based on the current date.</span>
+  <span class="r5">You can specify either output filepath or output directory.</span>
+  <span class="r5">When the directory path is provided the output filename will be generated based on the current date.</span>
 
   <span class="r3">-od</span>, <span class="r3">--output-directory</span> <span class="r4">OUTPUT_DIRECTORY</span>
-        <span class="r5">Path of the directory where the output file will be placed. Filename will be generated based on time and language.</span>
+        <span class="r5">Path of the directory where the output file will be placed.</span>
+        <span class="r5">Filename will be generated based on time and language.</span>
         <span class="r5">This path will always be treated as a folder path, even if you provide an extension.</span>
         <span class="r5">(default: </span><span class="r7">.</span><span class="r5">)</span>
   <span class="r3">-o</span>, <span class="r3">-of</span>, <span class="r3">--output-file</span> <span class="r4">OUTPUT_FILEPATH</span>

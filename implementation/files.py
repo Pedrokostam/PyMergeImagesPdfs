@@ -1,10 +1,14 @@
 import datetime
 from operator import methodcaller
 from pathlib import Path
-from typing import Any, Generator
+from typing import Any, Generator, Sequence, cast
+
 from natsort import natsorted, ns
-from .progress_reporting import create_progress_bar, close_progress_bar
-from .logger import get_quiet, print_message, print_newline, print_translated, translate, set_writer
+
+from implementation.logger import (get_quiet, print_message, print_newline,
+                                   print_translated, set_writer, translate)
+from implementation.progress_reporting import (close_progress_bar,
+                                               create_progress_bar)
 
 # fmt: off
 # extensions copy-pasted from Open File windows in LibreOffice
@@ -162,7 +166,7 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
         print_translated("InputSorted")
         print_newline()
     folded_paths: list[FoldedPath] = []
-    progress_bar = create_progress_bar(enumerate(paths),translate("EnumeratingInput"))
+    progress_bar = cast(Sequence[tuple[int,str]] ,create_progress_bar(enumerate(paths),translate("EnumeratingInput")))
     set_writer(progress_bar)
     print_translated("FilesToProcess")
     for i, path in progress_bar:

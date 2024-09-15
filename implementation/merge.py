@@ -6,11 +6,11 @@ from time import sleep
 from typing import Sequence
 import pymupdf
 
-from .progress_reporting import close_progress_bar, create_progress_bar
-from .configuration import Configuration
-from .logger import print_newline, print_translated, translate
-from .dimension import Dimension
-from .files import is_image_extension, is_pdf_extension, is_document_extension
+from implementation.progress_reporting import close_progress_bar
+from implementation.configuration import Configuration
+from implementation.logger import print_newline, print_translated
+from implementation.dimension import Dimension
+from implementation.files import is_image_extension, is_pdf_extension, is_document_extension
 
 PathLike = str | Path
 

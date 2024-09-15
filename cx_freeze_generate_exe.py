@@ -84,10 +84,30 @@ def update_language() -> list[str]:
     return [f.name for f in foreign_lang_files]
 
 
+def is_actual_requirement_line(line: str):
+    line = line.strip()
+    return line and not line.startswith("#")
+
+
+def sanitize_name(name: str):
+    # take the first part and lower it
+    name = name.split("=")[0].lower()
+    # replace dashes with underscore - we need the import name
+    # (won't work for all packages, but works here)
+    name = name.replace("-", "_")
+    return name
+
+
 def get_from_requirements():
     with open(SETUP_ROOT.joinpath("requirements.txt"), "r", encoding="utf8") as req:
-        modules = [x.split("=")[0].lower() for x in req.readlines()]
-        modules = [m for m in modules if m != "cx_freeze"]
+        modules = []
+        for line in req.readlines():
+            if not  is_actual_requirement_line(line):
+                continue
+            name = sanitize_name(line)
+            if name == "cx_freeze":
+                continue
+            modules.append(name)
         return modules
 
 

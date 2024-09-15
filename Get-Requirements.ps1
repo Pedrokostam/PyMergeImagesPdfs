@@ -3,7 +3,7 @@ param (
 )
 try {
     Push-Location $PSScriptRoot
-    pipreqs.exe . --encoding=utf8 --force --ignore .venv --ignore dist --ignore build --ignore .idea
+    pigar generate  --question-answer yes --with-referenced-comments
 } finally {
     Pop-Location
 }
