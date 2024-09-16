@@ -4,7 +4,7 @@
   "UnknownFileType": "Unknown file type {0}.",
   "MergedFile": "Merged: '{0}'.",
   "Merging": "Merging... (page count: {0})",
-  "MergingFinished": "Merged (page count: {0}).",
+  "MergingFinished": "Document merging complete (page count: {0}).",
   "EnumeratingInput": "Enumerating files...",
   "FirstPageSize": "First PDF page size: {0}.",
   "GeneratedDefaultConfig": "Generated default configration file.",

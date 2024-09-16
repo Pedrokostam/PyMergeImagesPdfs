@@ -4,7 +4,7 @@
   "UnknownFileType": "Nieznany typ pliku {0}.",
   "MergedFile": "Dołączono: '{0}'.",
   "Merging": "Łączenie... (liczba stron: {0})",
-  "MergingFinished": "Połączono (liczba stron: {0}).",
+  "MergingFinished": "Zakończono łączenie dokumentów (liczba stron: {0}).",
   "EnumeratingInput": "Zliczanie plików...",
   "FirstPageSize": "Rozmiar pierwszej strony PDF: {0}.",
   "GeneratedDefaultConfig": "Utworzono plik domyślnej konfiguracji.",

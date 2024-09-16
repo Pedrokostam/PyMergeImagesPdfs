@@ -1,14 +1,20 @@
 import datetime
 from operator import methodcaller
 from pathlib import Path
-from typing import Any, Generator, Sequence, cast
+from typing import Any, Generator, cast
 
 from natsort import natsorted, ns
+import tqdm
 
-from implementation.logger import (get_quiet, print_message, print_newline,
-                                   print_translated, set_writer, translate)
-from implementation.progress_reporting import (close_progress_bar,
-                                               create_progress_bar)
+from implementation.logger import get_quiet, print_message, print_newline, print_translated, set_writer, translate
+from implementation.progress_reporting import close_progress_bar, create_progress_bar
+
+
+class DummyClass(tqdm.tqdm, list[tuple[int, str]]):
+    """All it does is to work around the weird type of tqdm.
+    It just tells the type checker, that the object is enumerable and also an instance of tqdm
+    """
+
 
 # fmt: off
 # extensions copy-pasted from Open File windows in LibreOffice
@@ -106,11 +112,11 @@ class FoldedPath:
         self.path = Path(path)
         self.subpaths: list[FoldedPath] = []
         self.is_last = is_last
-        self.has_files_or_is_file=False
+        self.has_files_or_is_file = False
 
     def populate(self, current_depth: int, max_depth: int):
         if not self.path.is_dir():
-            self.has_files_or_is_file=True
+            self.has_files_or_is_file = True
             return
         filtered_entries = [e for e in self.path.glob("*") if is_supported_entry(e)]
         dir_checker = methodcaller("is_dir")
@@ -166,7 +172,7 @@ def recurse_files(paths: list[str], sort_paths: bool, recursion_limit: int):
         print_translated("InputSorted")
         print_newline()
     folded_paths: list[FoldedPath] = []
-    progress_bar = cast(Sequence[tuple[int,str]] ,create_progress_bar(enumerate(paths),translate("EnumeratingInput")))
+    progress_bar = cast(DummyClass, create_progress_bar(enumerate(paths), translate("EnumeratingInput")))
     set_writer(progress_bar)
     print_translated("FilesToProcess")
     for i, path in progress_bar:

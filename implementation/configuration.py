@@ -127,6 +127,36 @@ class Configuration:
     what_if: bool = False
     language: str = ""
 
+    def __repr__(self):
+        parts = [
+            f"output_directory: {self.output_directory}",
+            f"libreoffice_path: {self.libreoffice_path}",
+            f"margin: {self.margin}",
+            f"image_fallback_size: {self.image_page_fallback_size}",
+            f"force_fallback_size: {self.force_image_page_fallback_size}",
+            f"alphabetic_file_sorting: {self.alphabetic_file_sorting}",
+            f"confirm_exit: {self.confirm_exit}",
+            f"quiet: {self.quiet}",
+            f"recursion_limit: {self.recursion_limit}",
+            f"what_if: {self.what_if}",
+        ]
+        return "\n".join(parts)
+
+    def __str__(self):
+        parts = [
+            f"output_directory: {self.output_directory}",
+            f"libreoffice_path: {self.libreoffice_path}",
+            f"margin: {self.margin}",
+            f"image_fallback_size: {self.image_page_fallback_size}",
+            f"force_fallback_size: {self.force_image_page_fallback_size}",
+            f"alphabetic_file_sorting: {self.alphabetic_file_sorting}",
+            f"confirm_exit: {self.confirm_exit}",
+            f"quiet: {self.quiet}",
+            f"recursion_limit: {self.recursion_limit}",
+            f"what_if: {self.what_if}",
+        ]
+        return "\n".join(parts)
+
     def add_item(self, doc: TOMLDocument, key: str, description: list[str] | str):
         newline(doc)
         if isinstance(description, list):
@@ -141,6 +171,7 @@ class Configuration:
         doc.add(dict_key, item(value))
 
     def _set_not_None(self, var_name: str, value):
+        assert var_name in self.__dict__
         if value is not None:
             setattr(self, var_name, value)
 
@@ -274,8 +305,8 @@ class Configuration:
         self._set_from_dictlike("_margin", dictionary)
         self._set_from_dictlike("_image_page_fallback_size", dictionary)
         self._set_from_dictlike("force_image_page_fallback_size", dictionary)
-        self._set_from_dictlike("output_directory", dictionary)
-        self._set_from_dictlike("libreoffice_path", dictionary)
+        self._set_from_dictlike("_output_directory", dictionary)
+        self._set_from_dictlike("_libreoffice_path", dictionary)
         self._set_from_dictlike("alphabetic_file_sorting", dictionary)
         self._set_from_dictlike("confirm_exit", dictionary)
         self._set_from_dictlike("quiet", dictionary)
@@ -283,4 +314,4 @@ class Configuration:
         self._set_from_dictlike("language", dictionary)
         if isinstance(dictionary, dict):
             # whatif should not be read from TOML
-            self._set_from_dictlike("whatif", dictionary)
+            self._set_from_dictlike("what_if", dictionary)

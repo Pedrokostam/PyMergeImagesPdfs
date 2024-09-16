@@ -58,6 +58,7 @@ def merge_documents(files: Sequence[PathLike], output_path: Path, config: Config
             print_translated("UnknownFileType", file)
         print_translated("MergedFile", file)
     close_progress_bar()
+    print_newline()
     print_translated("MergingFinished", output_file.page_count)
     output_path = output_path.with_suffix(".pdf")  # Make sure PDF is the extension
     if not config.what_if:
