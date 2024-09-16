@@ -3,7 +3,7 @@ import inspect
 from inspect import cleandoc as cd
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import rich_argparse
 import rich.terminal_theme
@@ -27,11 +27,19 @@ class Dummy:
     def __repr__(self):
         if self._obj == "":
             return '""'
+        if isinstance(self._obj,str):
+            return self._obj
+        if isinstance(self._obj, Sequence):
+            return "["+ ', '.join([f"'{x}'" for x in self._obj]) +"]"
         return repr(self._obj)
 
     def __str__(self):
         if self._obj == "":
             return '""'
+        if isinstance(self._obj,str):
+            return self._obj
+        if isinstance(self._obj, Sequence):
+            return "["+ ', '.join([f"'{x}'" for x in self._obj]) +"]"
         return str(self._obj)
 
     @staticmethod

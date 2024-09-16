@@ -20,9 +20,11 @@ class InvalidDimensionError(ValueError):
 
 PATH_DISCLAIMER = [
     "Paths may contain '~' and environmental variables (surrounded with '%%' or prepended with '$').",
+    "Can be relative (to the current working directory).",
+]
+PATH_DISCLAIMER_TOML = PATH_DISCLAIMER + [
     "Double quoted strings allow escaping, so backslash has to be double.",
     "To avoid that you can use single quoted string - single quotes make the string literal.",
-    "Can be relative (to the current working directory).",
 ]
 
 
@@ -41,6 +43,15 @@ LIBREOFFICE_PATH_DESCRIPTION = " \n".join(
         "If no path is valid conversion of document formats is disabled.",
     ]
     + PATH_DISCLAIMER
+)
+
+LIBREOFFICE_PATH_DESCRIPTION_TOML = " \n".join(
+    [
+        "Path to Libre Office executable.",
+        "First available path will be used.",
+        "If no path is valid conversion of document formats is disabled.",
+    ]
+    + PATH_DISCLAIMER_TOML
 )
 
 MARGIN_DESCRIPTION: str = " \n".join(
@@ -267,7 +278,7 @@ class Configuration:
             LIBREOFFICE_PATH_DESCRIPTION,
         )
         self.add_item(doc, "language", LANGUAGE_DESCRIPTION)
-        self.add_item(doc, "_output_directory", ["Path to the output folder."] + PATH_DISCLAIMER)
+        self.add_item(doc, "_output_directory", ["Path to the output folder."] + PATH_DISCLAIMER_TOML)
         self.add_item(doc, "_margin", MARGIN_DESCRIPTION)
         self.add_item(doc, "_image_page_fallback_size", IMAGE_PAGE_FALLBACK_SIZE_DESCRIPTION)
         self.add_item(
